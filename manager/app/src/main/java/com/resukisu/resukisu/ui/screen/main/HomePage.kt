@@ -1,6 +1,5 @@
 package com.resukisu.resukisu.ui.screen.main
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -103,6 +102,7 @@ import com.resukisu.resukisu.R
 import com.resukisu.resukisu.magica.MagicaService
 import com.resukisu.resukisu.ui.component.KsuIsValid
 import com.resukisu.resukisu.ui.component.WarningCard
+import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberLoadingDialog
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
@@ -797,7 +797,7 @@ private fun InfoCard(
                 icon = Icons.Default.SettingsSuggest,
             )
 
-            if (!isSimpleMode && !systemInfo.susfsEnabled) {
+            if (!isSimpleMode && ksuIsValid()) {
                 InfoCardItem(
                     stringResource(R.string.home_hook_type),
                     Natives.getHookType(),
@@ -904,34 +904,12 @@ private fun InfoCard(
             }
 
             if (!isSimpleMode && !isHideSusfsStatus && systemInfo.susfsEnabled && systemInfo.susfsVersion.isNotEmpty()) {
-                val infoText = SuSFSInfoText(systemInfo)
-
                 InfoCardItem(
                     stringResource(R.string.home_susfs_version),
-                    infoText,
+                    systemInfo.susfsVersion,
                     icon = Icons.Default.Storage
                 )
             }
-        }
-    }
-}
-
-@SuppressLint("ComposableNaming")
-@Composable
-private fun SuSFSInfoText(systemInfo: HomeViewModel.SystemInfo): String = buildString {
-    append(systemInfo.susfsVersion)
-
-    when {
-        Natives.getHookType() == "Manual" -> {
-            append(" (${stringResource(R.string.manual_hook)})")
-        }
-
-        Natives.getHookType() == "Inline" -> {
-            append(" (${stringResource(R.string.inline_hook)})")
-        }
-
-        else -> {
-            append(" (${Natives.getHookType()})")
         }
     }
 }
