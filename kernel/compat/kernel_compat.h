@@ -283,4 +283,8 @@ static inline u64 ksu_ktime_get_ns(void)
 #define untagged_addr(addr) (addr)
 #endif
 
+#ifndef in_compat_syscall
+#define in_compat_syscall() is_compat_task()
+#endif
+
 #endif
