@@ -65,7 +65,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -101,6 +100,7 @@ import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.magica.MagicaService
 import com.resukisu.resukisu.ui.component.KsuIsValid
+import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
 import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
@@ -167,7 +167,7 @@ fun HomePage(
             WindowInsetsSides.Top + WindowInsetsSides.Horizontal
         ),
         snackbarHost = {
-            SnackbarHost(
+            SwipeableSnackbarHost(
                 modifier = Modifier.padding(bottom = bottomPadding),
                 hostState = LocalSnackbarHost.current
             )

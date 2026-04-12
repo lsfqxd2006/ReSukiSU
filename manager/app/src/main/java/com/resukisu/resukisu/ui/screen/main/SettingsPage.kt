@@ -59,7 +59,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -96,6 +95,7 @@ import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.magica.BootCompletedReceiver
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.DialogHandle
+import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
 import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberCustomDialog
@@ -144,7 +144,7 @@ fun SettingsPage(bottomPadding: Dp) {
             TopBar(scrollBehavior = scrollBehavior)
         },
         snackbarHost = {
-            SnackbarHost(
+            SwipeableSnackbarHost(
                 modifier = Modifier.padding(bottom = bottomPadding),
                 hostState = snackBarHost
             )

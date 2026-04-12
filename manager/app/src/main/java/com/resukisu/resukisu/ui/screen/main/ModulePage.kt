@@ -78,7 +78,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
@@ -134,6 +133,7 @@ import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.InstallConfirmationDialog
 import com.resukisu.resukisu.ui.component.SearchAppBar
+import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
 import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.ZipFileDetector.parseModuleInfo
 import com.resukisu.resukisu.ui.component.ZipFileInfo
@@ -361,7 +361,7 @@ fun ModulePage(bottomPadding: Dp) {
             WindowInsetsSides.Top + WindowInsetsSides.Horizontal
         ),
         snackbarHost = {
-            SnackbarHost(
+            SwipeableSnackbarHost(
                 hostState = snackBarHost
             )
         }
