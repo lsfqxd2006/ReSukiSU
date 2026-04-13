@@ -16,10 +16,18 @@ val managerVersionName by extra(getGitDescribe())
 
 fun getGitCommitCount(): Int {
     return try {
-        providers.exec { commandLine("git", "fetch", "--depth=999999", "https://github.com/ReSukiSU/ReSukiSU.git", "main") }
-        providers.exec { commandLine("git", "rev-list", "--count", "FETCH_HEAD") }
-            .standardOutput.asText.get().trim().toInt()
-    } catch (e: Exception) { 0 }
+        val hash = providers.exec {
+            commandLine("git", "ls-remote", "https://github.com/ReSukiSU/ReSukiSU.git", "main")
+        }.standardOutput.asText.get().split("\\s+".toRegex())[0]
+        providers.exec {
+            commandLine("git", "fetch", "https://github.com/ReSukiSU/ReSukiSU.git", "$hash")
+        }
+        providers.exec {
+            commandLine("git", "rev-list", "--count", "$hash")
+        }.standardOutput.asText.get().trim().toInt()
+    } catch (e: Exception) {
+        0
+    }
 }
 
 fun getGitDescribe(): String {
