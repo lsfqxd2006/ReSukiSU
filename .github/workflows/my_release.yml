@@ -25,7 +25,7 @@ jobs:
         with:
           path: ./
 
-      # 列出所有文件（用于调试）
+      # 列出所有文件（调试用）
       - name: List all files
         run: ls -R
 
@@ -37,10 +37,10 @@ jobs:
           find Spoofed-Manager-release -name "*.apk" -exec mv {} . \;
           find Spoofed-Manager-debug -name "*.apk" -exec mv {} . \;
 
-      # 提取所有 ksud 二进制
+      # 修复：ksud 直接在文件夹根目录，没有 release 子文件夹！
       - name: Collect ksud
         run: |
-          find ksud-*/release -name "ksud" -exec mv {} . \;
+          find ksud-* -name "ksud" -exec mv {} . \;
 
       # 提取 ksuinit
       - name: Collect ksuinit
