@@ -22,7 +22,6 @@ jobs:
         with:
           path: ./artifacts
 
-      # 显示完整结构（调试用）
       - name: Tree artifacts
         run: find ./artifacts
 
@@ -32,41 +31,40 @@ jobs:
       - name: Get version from APK
         id: ver
         run: |
-          APK=$(find ./artifacts -path "*/Manager-release/apk/release/*.apk" | head -1)
+          APK=$(find ./artifacts -name "*.apk" | grep Manager-release | head -1)
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
 
       # ==========================================
-      # 🔥 最安全：进入对应目录直接压缩
-      # 绝对能找到所有文件！
+      # 🔥 统一压缩：全部不带zip，内部无多余路径
       # ==========================================
-      - name: Pack all required files
+      - name: Pack all files (clean & uniform)
         run: |
           mkdir -p upload
           
           # Manager
-          zip -rq ./upload/Manager-debug ./artifacts/Manager-debug
-          zip -rq ./upload/Manager-release ./artifacts/Manager-release
-          zip -rq ./upload/Spoofed-Manager-debug ./artifacts/Spoofed-Manager-debug
-          zip -rq ./upload/Spoofed-Manager-release ./artifacts/Spoofed-Manager-release
+          cd ./artifacts/Manager-debug && zip -rq ../../upload/Manager-debug . && cd ../..
+          cd ./artifacts/Manager-release && zip -rq ../../upload/Manager-release . && cd ../..
+          cd ./artifacts/Spoofed-Manager-debug && zip -rq ../../upload/Spoofed-Manager-debug . && cd ../..
+          cd ./artifacts/Spoofed-Manager-release && zip -rq ../../upload/Spoofed-Manager-release . && cd ../..
           
-          # LKM
-          zip -rq ./upload/android12-5.10-lkm ./artifacts/android12-5.10-lkm
-          zip -rq ./upload/android13-5.10-lkm ./artifacts/android13-5.10-lkm
-          zip -rq ./upload/android13-5.15-lkm ./artifacts/android13-5.15-lkm
-          zip -rq ./upload/android14-5.15-lkm ./artifacts/android14-5.15-lkm
-          zip -rq ./upload/android14-6.1-lkm ./artifacts/android14-6.1-lkm
-          zip -rq ./upload/android15-6.6-lkm ./artifacts/android15-6.6-lkm
-          zip -rq ./upload/android16-6.12-lkm ./artifacts/android16-6.12-lkm
+          # LKM 全部统一压缩（不带后缀，内部干净）
+          cd ./artifacts/android12-5.10-lkm && zip -rq ../../upload/android12-5.10-lkm . && cd ../..
+          cd ./artifacts/android13-5.10-lkm && zip -rq ../../upload/android13-5.10-lkm . && cd ../..
+          cd ./artifacts/android13-5.15-lkm && zip -rq ../../upload/android13-5.15-lkm . && cd ../..
+          cd ./artifacts/android14-5.15-lkm && zip -rq ../../upload/android14-5.15-lkm . && cd ../..
+          cd ./artifacts/android14-6.1-lkm && zip -rq ../../upload/android14-6.1-lkm . && cd ../..
+          cd ./artifacts/android15-6.6-lkm && zip -rq ../../upload/android15-6.6-lkm . && cd ../..
+          cd ./artifacts/android16-6.12-lkm && zip -rq ../../upload/android16-6.12-lkm . && cd ../..
           
-          # ksud
-          zip -rq ./upload/ksud-aarch64-linux-android ./artifacts/ksud-aarch64-linux-android
-          zip -rq ./upload/ksud-armv7-linux-androideabi ./artifacts/ksud-armv7-linux-androideabi
-          zip -rq ./upload/ksud-x86_64-linux-android ./artifacts/ksud-x86_64-linux-android
+          # ksud 统一压缩
+          cd ./artifacts/ksud-aarch64-linux-android && zip -rq ../../upload/ksud-aarch64-linux-android . && cd ../..
+          cd ./artifacts/ksud-armv7-linux-androideabi && zip -rq ../../upload/ksud-armv7-linux-androideabi . && cd ../..
+          cd ./artifacts/ksud-x86_64-linux-android && zip -rq ../../upload/ksud-x86_64-linux-android . && cd ../..
           
           # ksuinit
-          zip -rq ./upload/ksuinit ./artifacts/ksuinit
+          cd ./artifacts/ksuinit && zip -rq ../../upload/ksuinit . && cd ../..
 
       - name: List upload files
         run: ls -la ./upload
@@ -80,7 +78,7 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # 只上传 upload 目录（100% 干净，无多余文件）
+      # 发布：全部统一格式
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
