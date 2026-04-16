@@ -17,39 +17,30 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # ==========================================
-      # ✅ 下载：原始压缩包（不会自动解压）
-      # ==========================================
-      - name: Download all artifacts (ZIP)
+      # 下载原始压缩包（无后缀，但本质是ZIP）
+      - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
-      # 查看文件（确认是 .zip）
+      # 查看文件
       - name: List files
         run: ls -la ./artifacts
 
       # ==========================================
-      # ✅ 正确提取版本号（严格按你的真实路径）
+      # 正确获取版本（严格按你的路径）
       # ==========================================
       - name: Get version from APK
         id: ver
         run: |
-          # 临时解压
-          unzip -q ./artifacts/Manager-release.zip -d tmp
-          
-          # 🔥 严格按你给的真实路径：apk/release/*.apk
+          unzip -q ./artifacts/Manager-release -d tmp
           APK=$(find tmp -path "*/apk/release/*.apk" | head -1)
-          
-          # 提取版本 vX.X.X_XXXX
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
-          
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
-          
           rm -rf tmp
 
-      # 创建 TAG
+      # 创建TAG
       - name: Create and push tag
         run: |
           git config --global user.name "github-actions"
@@ -58,7 +49,7 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # ✅ 发布：全部原始压缩包，一个不改
+      # 发布：原封不动上传所有压缩包
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
