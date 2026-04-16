@@ -1,5 +1,4 @@
 name: Release ReSukiSU
-
 on:
   workflow_dispatch:
 
@@ -7,68 +6,81 @@ permissions:
   contents: write
 
 jobs:
-  build-manager:
+  build:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
 
   release:
-    needs: build-manager
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      # 下载所有构建产物（自动解压全部 artifact 压缩包）
+      # 下载所有产物（全部是原始压缩包）
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: ./
 
-      # 查看完整结构（调试用，可看到所有 LKM 文件夹）
-      - name: List all files
-        run: ls -R
+      # 查看文件
+      - name: List files
+        run: ls -la
 
-      # ✅ 从 APK 读取版本号（100% 不报错，万能加固写法）
-      - name: Get version from APK
+      # ==========================================
+      # ✅ 严格按 build.yml 路径 提取版本号
+      # 解压 Manager-release → 读取内部正确路径的 APK
+      # ==========================================
+      - name: Get version from correct APK path
         id: ver
         run: |
-          APK=$(find . -name "*.apk" -type f | grep "Manager-release" | head -n 1)
-          VERSION=$(echo "$APK" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+_[0-9]+' | head -n 1)
+          # 临时解压（仅读取版本，不影响发布文件）
+          unzip -q Manager-release -d tmp
+          
+          # 【严格按你的 build 脚本内部路径】
+          APK=$(find tmp -path "*/outputs/apk/release/*.apk" | head -1)
+          
+          # 提取版本号
+          VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
+          
+          # 输出
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "title=ReSukiSU $VERSION" >> "$GITHUB_OUTPUT"
+          
+          # 删除临时文件（完全不影响发布）
+          rm -rf tmp
 
-      # 创建 Tag
-      - name: Create and push tag
+      # 创建 tag
+      - name: Create tag
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.nore.github.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
           git tag -f "${{ steps.ver.outputs.tag }}"
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
-      # ✅ 原封不动发布所有构建产物（100% 精准匹配你的 build）
+      # ==========================================
+      # ✅ 原封不动上传所有压缩包（一个不改）
+      # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
-          body: |
-            自动构建 ReSukiSU
-            ✅ Manager 全平台
-            ✅ Spoofed Manager
-            ✅ LKM 内核模块（全部）
-            ✅ ksud 全平台
-            ✅ ksuinit
-          # 👇 👇 👇 这是最终完美路径，100% 匹配你的 build
           files: |
-            Manager-release/*
-            Manager-debug/*
-            Spoofed-Manager-release/*
-            Spoofed-Manager-debug/*
-            ksud-*/ksud
-            android-*-lkm/*.ko
-            ksuinit/ksuinit
-          overwrite_files: true
-          generate_release_notes: false
+            Manager-debug
+            Manager-release
+            Spoofed-Manager-debug
+            Spoofed-Manager-release
+            android12-5.10-lkm
+            android13-5.10-lkm
+            android13-5.15-lkm
+            android14-5.15-lkm
+            android14-6.1-lkm
+            android15-6.6-lkm
+            android16-6.12-lkm
+            ksud-aarch64-linux-android
+            ksud-armv7-linux-androideabi
+            ksud-x86_64-linux-android
+            ksuinit
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
