@@ -26,7 +26,7 @@ jobs:
         run: find ./artifacts
 
       # ==========================================
-      # 正确读取版本号（已修复拼写错误！）
+      # 正确读取版本号
       # ==========================================
       - name: Get version from APK
         id: ver
@@ -37,34 +37,34 @@ jobs:
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
 
       # ==========================================
-      # 统一压缩：全部不带zip，内部无多余路径
+      # 统一压缩：全部带 .zip 后缀！全部正常！
       # ==========================================
-      - name: Pack all files (clean & uniform)
+      - name: Pack all files (ALL .zip UNIFORM)
         run: |
           mkdir -p upload
           
           # Manager
-          cd ./artifacts/Manager-debug && zip -rq ../../upload/Manager-debug . && cd ../..
-          cd ./artifacts/Manager-release && zip -rq ../../upload/Manager-release . && cd ../..
-          cd ./artifacts/Spoofed-Manager-debug && zip -rq ../../upload/Spoofed-Manager-debug . && cd ../..
-          cd ./artifacts/Spoofed-Manager-release && zip -rq ../../upload/Spoofed-Manager-release . && cd ../..
+          cd ./artifacts/Manager-debug && zip -rq ../../upload/Manager-debug.zip . && cd ../..
+          cd ./artifacts/Manager-release && zip -rq ../../upload/Manager-release.zip . && cd ../..
+          cd ./artifacts/Spoofed-Manager-debug && zip -rq ../../upload/Spoofed-Manager-debug.zip . && cd ../..
+          cd ./artifacts/Spoofed-Manager-release && zip -rq ../../upload/Spoofed-Manager-release.zip . && cd ../..
           
-          # LKM
-          cd ./artifacts/android12-5.10-lkm && zip -rq ../../upload/android12-5.10-lkm . && cd ../..
-          cd ./artifacts/android13-5.10-lkm && zip -rq ../../upload/android13-5.10-lkm . && cd ../..
-          cd ./artifacts/android13-5.15-lkm && zip -rq ../../upload/android13-5.15-lkm . && cd ../..
-          cd ./artifacts/android14-5.15-lkm && zip -rq ../../upload/android14-5.15-lkm . && cd ../..
-          cd ./artifacts/android14-6.1-lkm && zip -rq ../../upload/android14-6.1-lkm . && cd ../..
-          cd ./artifacts/android15-6.6-lkm && zip -rq ../../upload/android15-6.6-lkm . && cd ../..
-          cd ./artifacts/android16-6.12-lkm && zip -rq ../../upload/android16-6.12-lkm . && cd ../..
+          # LKM 全部强制带 .zip！！！
+          cd ./artifacts/android12-5.10-lkm && zip -rq ../../upload/android12-5.10-lkm.zip . && cd ../..
+          cd ./artifacts/android13-5.10-lkm && zip -rq ../../upload/android13-5.10-lkm.zip . && cd ../..
+          cd ./artifacts/android13-5.15-lkm && zip -rq ../../upload/android13-5.15-lkm.zip . && cd ../..
+          cd ./artifacts/android14-5.15-lkm && zip -rq ../../upload/android14-5.15-lkm.zip . && cd ../..
+          cd ./artifacts/android14-6.1-lkm && zip -rq ../../upload/android14-6.1-lkm.zip . && cd ../..
+          cd ./artifacts/android15-6.6-lkm && zip -rq ../../upload/android15-6.6-lkm.zip . && cd ../..
+          cd ./artifacts/android16-6.12-lkm && zip -rq ../../upload/android16-6.12-lkm.zip . && cd ../..
           
           # ksud
-          cd ./artifacts/ksud-aarch64-linux-android && zip -rq ../../upload/ksud-aarch64-linux-android . && cd ../..
-          cd ./artifacts/ksud-armv7-linux-androideabi && zip -rq ../../upload/ksud-armv7-linux-androideabi . && cd ../..
-          cd ./artifacts/ksud-x86_64-linux-android && zip -rq ../../upload/ksud-x86_64-linux-android . && cd ../..
+          cd ./artifacts/ksud-aarch64-linux-android && zip -rq ../../upload/ksud-aarch64-linux-android.zip . && cd ../..
+          cd ./artifacts/ksud-armv7-linux-androideabi && zip -rq ../../upload/ksud-armv7-linux-androideabi.zip . && cd ../..
+          cd ./artifacts/ksud-x86_64-linux-android && zip -rq ../../upload/ksud-x86_64-linux-android.zip . && cd ../..
           
           # ksuinit
-          cd ./artifacts/ksuinit && zip -rq ../../upload/ksuinit . && cd ../..
+          cd ./artifacts/ksuinit && zip -rq ../../upload/ksuinit.zip . && cd ../..
 
       - name: List upload files
         run: ls -la ./upload
@@ -78,7 +78,7 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # 正确发布，无报错
+      # 发布全部 .zip 文件
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
