@@ -17,18 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # 下载所有构建产物（自动解压为文件夹）
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
-      # 查看结构（调试用）
       - name: List artifacts structure
         run: ls -la ./artifacts
 
       # ==========================================
-      # 正确读取版本号（严格按你的路径 apk/release）
+      # 正确读取版本号
       # ==========================================
       - name: Get version from APK
         id: ver
@@ -39,22 +37,34 @@ jobs:
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
 
       # ==========================================
-      # 🔥 自动压缩所有文件（和你列表完全一致）
+      # 🔥 只压缩你指定的 15 个文件，绝对干净
       # ==========================================
-      - name: Re-zip ALL artifacts to original format
+      - name: Re-zip ONLY required artifacts
         run: |
           cd ./artifacts
-          for dir in */; do
-            name="${dir%/}"
-            zip -rq "../$name" "$name"
-          done
+          zip -rq "../Manager-debug" Manager-debug
+          zip -rq "../Manager-release" Manager-release
+          zip -rq "../Spoofed-Manager-debug" Spoofed-Manager-debug
+          zip -rq "../Spoofed-Manager-release" Spoofed-Manager-release
+          zip -rq "../android12-5.10-lkm" android12-5.10-lkm
+          zip -rq "../android13-5.10-lkm" android13-5.10-lkm
+          zip -rq "../android13-5.15-lkm" android13-5.15-lkm
+          zip -rq "../android14-5.15-lkm" android14-5.15-lkm
+          zip -rq "../android14-6.1-lkm" android14-6.1-lkm
+          zip -rq "../android15-6.6-lkm" android15-6.6-lkm
+          zip -rq "../android16-6.12-lkm" android16-6.12-lkm
+          zip -rq "../ksud-aarch64-linux-android" ksud-aarch64-linux-android
+          zip -rq "../ksud-armv7-linux-androideabi" ksud-armv7-linux-androideabi
+          zip -rq "../ksud-x86_64-linux-android" ksud-x86_64-linux-android
+          zip -rq "../ksuinit" ksuinit
           cd ..
 
-      # 确认最终所有文件（100% 齐全）
       - name: List final all files
         run: ls -la
 
+      # ==========================================
       # 创建 TAG
+      # ==========================================
       - name: Create and push tag
         run: |
           git config --global user.name "github-actions[bot]"
@@ -63,14 +73,29 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # 🚀 上传：全部文件！一个不漏！
+      # 🎯 只上传你指定的 15 个文件！绝对干净！
       # ==========================================
       - name: Create Release & Upload ALL
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
-          files: ./*
+          files: |
+            Manager-debug
+            Manager-release
+            Spoofed-Manager-debug
+            Spoofed-Manager-release
+            android12-5.10-lkm
+            android13-5.10-lkm
+            android13-5.15-lkm
+            android14-5.15-lkm
+            android14-6.1-lkm
+            android15-6.6-lkm
+            android16-6.12-lkm
+            ksud-aarch64-linux-android
+            ksud-armv7-linux-androideabi
+            ksud-x86_64-linux-android
+            ksuinit
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
