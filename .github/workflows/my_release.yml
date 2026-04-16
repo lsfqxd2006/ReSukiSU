@@ -22,8 +22,9 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: List artifacts structure
-        run: ls -la ./artifacts
+      # 显示完整结构（调试用）
+      - name: Tree artifacts
+        run: find ./artifacts
 
       # ==========================================
       # 正确读取版本号
@@ -31,40 +32,46 @@ jobs:
       - name: Get version from APK
         id: ver
         run: |
-          APK=$(find ./artifacts/Manager-release -path "*/apk/release/*.apk" | head -1)
+          APK=$(find ./artifacts -path "*/Manager-release/apk/release/*.apk" | head -1)
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
 
       # ==========================================
-      # 🔥 只压缩你指定的 15 个文件，绝对干净
+      # 🔥 最安全：进入对应目录直接压缩
+      # 绝对能找到所有文件！
       # ==========================================
-      - name: Re-zip ONLY required artifacts
+      - name: Pack all required files
         run: |
-          cd ./artifacts
-          zip -rq "../Manager-debug" Manager-debug
-          zip -rq "../Manager-release" Manager-release
-          zip -rq "../Spoofed-Manager-debug" Spoofed-Manager-debug
-          zip -rq "../Spoofed-Manager-release" Spoofed-Manager-release
-          zip -rq "../android12-5.10-lkm" android12-5.10-lkm
-          zip -rq "../android13-5.10-lkm" android13-5.10-lkm
-          zip -rq "../android13-5.15-lkm" android13-5.15-lkm
-          zip -rq "../android14-5.15-lkm" android14-5.15-lkm
-          zip -rq "../android14-6.1-lkm" android14-6.1-lkm
-          zip -rq "../android15-6.6-lkm" android15-6.6-lkm
-          zip -rq "../android16-6.12-lkm" android16-6.12-lkm
-          zip -rq "../ksud-aarch64-linux-android" ksud-aarch64-linux-android
-          zip -rq "../ksud-armv7-linux-androideabi" ksud-armv7-linux-androideabi
-          zip -rq "../ksud-x86_64-linux-android" ksud-x86_64-linux-android
-          zip -rq "../ksuinit" ksuinit
-          cd ..
+          mkdir -p upload
+          
+          # Manager
+          zip -rq ./upload/Manager-debug ./artifacts/Manager-debug
+          zip -rq ./upload/Manager-release ./artifacts/Manager-release
+          zip -rq ./upload/Spoofed-Manager-debug ./artifacts/Spoofed-Manager-debug
+          zip -rq ./upload/Spoofed-Manager-release ./artifacts/Spoofed-Manager-release
+          
+          # LKM
+          zip -rq ./upload/android12-5.10-lkm ./artifacts/android12-5.10-lkm
+          zip -rq ./upload/android13-5.10-lkm ./artifacts/android13-5.10-lkm
+          zip -rq ./upload/android13-5.15-lkm ./artifacts/android13-5.15-lkm
+          zip -rq ./upload/android14-5.15-lkm ./artifacts/android14-5.15-lkm
+          zip -rq ./upload/android14-6.1-lkm ./artifacts/android14-6.1-lkm
+          zip -rq ./upload/android15-6.6-lkm ./artifacts/android15-6.6-lkm
+          zip -rq ./upload/android16-6.12-lkm ./artifacts/android16-6.12-lkm
+          
+          # ksud
+          zip -rq ./upload/ksud-aarch64-linux-android ./artifacts/ksud-aarch64-linux-android
+          zip -rq ./upload/ksud-armv7-linux-androideabi ./artifacts/ksud-armv7-linux-androideabi
+          zip -rq ./upload/ksud-x86_64-linux-android ./artifacts/ksud-x86_64-linux-android
+          
+          # ksuinit
+          zip -rq ./upload/ksuinit ./artifacts/ksuinit
 
-      - name: List final all files
-        run: ls -la
+      - name: List upload files
+        run: ls -la ./upload
 
-      # ==========================================
       # 创建 TAG
-      # ==========================================
       - name: Create and push tag
         run: |
           git config --global user.name "github-actions[bot]"
@@ -73,29 +80,14 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # 🎯 只上传你指定的 15 个文件！绝对干净！
+      # 只上传 upload 目录（100% 干净，无多余文件）
       # ==========================================
-      - name: Create Release & Upload ALL
+      - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
-          files: |
-            Manager-debug
-            Manager-release
-            Spoofed-Manager-debug
-            Spoofed-Manager-release
-            android12-5.10-lkm
-            android13-5.10-lkm
-            android13-5.15-lkm
-            android14-5.15-lkm
-            android14-6.1-lkm
-            android15-6.6-lkm
-            android16-6.12-lkm
-            ksud-aarch64-linux-android
-            ksud-armv7-linux-androideabi
-            ksud-x86_64-linux-android
-            ksuinit
+          files: ./upload/*
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
