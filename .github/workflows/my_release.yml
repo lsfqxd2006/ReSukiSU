@@ -18,32 +18,35 @@ jobs:
       - uses: actions/checkout@v6
 
       # ==========================================
-      # ✅ 下载 原始压缩包（绝对不会自动解压）
+      # ✅ 下载：原始压缩包（不会自动解压）
       # ==========================================
-      - name: Download all build artifacts (ZIP)
+      - name: Download all artifacts (ZIP)
         uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
-      # 查看文件（确认全是压缩包）
+      # 查看文件（确认是 .zip）
       - name: List files
         run: ls -la ./artifacts
 
       # ==========================================
-      # ✅ 正确提取版本号（临时解压，不影响发布）
+      # ✅ 正确提取版本号（严格按你的真实路径）
       # ==========================================
-      - name: Get version from APK inside zip
+      - name: Get version from APK
         id: ver
         run: |
-          # 临时解压，只读版本
-          unzip -q ./artifacts/Manager-release -d tmp
-          # 严格匹配 build-manager.yml 内部路径
-          APK=$(find tmp -path "*/outputs/apk/release/*.apk" | head -1)
-          # 精准提取 vX.X.X_XXXX
+          # 临时解压
+          unzip -q ./artifacts/Manager-release.zip -d tmp
+          
+          # 🔥 严格按你给的真实路径：apk/release/*.apk
+          APK=$(find tmp -path "*/apk/release/*.apk" | head -1)
+          
+          # 提取版本 vX.X.X_XXXX
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
+          
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
-          # 删除临时文件
+          
           rm -rf tmp
 
       # 创建 TAG
@@ -55,15 +58,14 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # ✅ 发布：全部是原始压缩包，一个不改
+      # ✅ 发布：全部原始压缩包，一个不改
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
-          files: |
-            ./artifacts/**/*
+          files: ./artifacts/**/*
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
