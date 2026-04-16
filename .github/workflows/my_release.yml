@@ -17,28 +17,42 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # 下载原始压缩包（无后缀，但本质是ZIP）
+      # ==========================================
+      # 下载后自动变成文件夹（这是GitHub默认行为）
+      # ==========================================
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: ./artifacts
 
-      # 查看文件
+      # 查看结构
       - name: List files
         run: ls -la ./artifacts
 
       # ==========================================
-      # 正确获取版本（严格按你的路径）
+      # 正确获取版本：直接从文件夹读取！不用unzip！
+      # 你的真实路径：apk/release/*.apk
       # ==========================================
       - name: Get version from APK
         id: ver
         run: |
-          unzip -q ./artifacts/Manager-release -d tmp
-          APK=$(find tmp -path "*/apk/release/*.apk" | head -1)
+          APK=$(find ./artifacts/Manager-release -path "*/apk/release/*.apk" | head -1)
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
-          rm -rf tmp
+
+      # ==========================================
+      # 重新压缩 → 和官方完全一样的格式（无后缀zip）
+      # 用户下载会自动变成 .zip
+      # ==========================================
+      - name: Re-zip artifacts to original format
+        run: |
+          cd ./artifacts
+          for dir in */; do
+            dirname=${dir%/}
+            zip -rq "../$dirname" "$dir"
+          done
+          cd ..
 
       # 创建TAG
       - name: Create and push tag
@@ -49,14 +63,29 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # 发布：原封不动上传所有压缩包
+      # 发布：和官方完全一样的压缩包
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
-          files: ./artifacts/**/*
+          files: |
+            Manager-release
+            Manager-debug
+            Spoofed-Manager-release
+            Spoofed-Manager-debug
+            android12-5.10-lkm
+            android13-5.10-lkm
+            android13-5.15-lkm
+            android14-5.15-lkm
+            android14-6.1-lkm
+            android15-6.6-lkm
+            android16-6.12-lkm
+            ksud-aarch64-linux-android
+            ksud-armv7-linux-androideabi
+            ksud-x86_64-linux-android
+            ksuinit
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
