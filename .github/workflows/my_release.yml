@@ -25,24 +25,21 @@ jobs:
         with:
           path: ./
 
-      # 列出所有文件（调试用）
+      # 调试：查看完整文件结构
       - name: List all files
         run: ls -R
 
-      # 提取所有APK到根目录
-      - name: Collect APKs
+      # 【全局提取所有APK】Manager + Spoofed + Release + Debug
+      - name: Collect all APKs
         run: |
-          find Manager-release -name "*.apk" -exec mv {} . \;
-          find Manager-debug -name "*.apk" -exec mv {} . \;
-          find Spoofed-Manager-release -name "*.apk" -exec mv {} . \;
-          find Spoofed-Manager-debug -name "*.apk" -exec mv {} . \;
+          find . -name "*.apk" -exec mv {} . \;
 
-      # 修复：ksud 直接在文件夹根目录，没有 release 子文件夹！
-      - name: Collect ksud
+      # 【全局提取所有 ksud】所有平台
+      - name: Collect all ksud
         run: |
-          find ksud-* -name "ksud" -exec mv {} . \;
+          find . -name "ksud" -exec mv {} . \;
 
-      # 提取 ksuinit
+      # 【全局提取 ksuinit】
       - name: Collect ksuinit
         run: |
           find . -name "ksuinit" -exec mv {} . \;
@@ -72,10 +69,10 @@ jobs:
           name: "ReSukiSU ${{ steps.ver.outputs.tag }}"
           body: |
             自动构建 ReSukiSU
-            ✅ Manager 多平台
+            ✅ Manager 全平台
             ✅ Spoofed Manager
-            ✅ LKM 模块
-            ✅ ksud 多平台
+            ✅ LKM 内核模块
+            ✅ ksud 全平台
             ✅ ksuinit
           files: |
             *.apk
