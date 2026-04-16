@@ -1,0 +1,75 @@
+name: Release ReSukiSU
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-manager:
+    uses: ./.github/workflows/build-manager.yml
+    secrets: inherit
+
+  release:
+    needs: build-manager
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # 下载所有构建产物
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: .
+
+      # 把所有 apk 统一挪到根目录，方便发布
+      - name: Collect all APKs to root
+        run: |
+          find . -name "*.apk" -exec mv {} . \;
+
+      # 看一下最终文件
+      - name: List files
+        run: ls -l
+
+      # 从 APK 文件名提取版本号
+      - name: Extract version from APK
+        id: ver
+        run: |
+          APK=$(find . -maxdepth 1 -name "ReSukiSU_*.apk" | head -1)
+          APK_NAME=$(basename "$APK")
+          VERSION=$(echo "$APK_NAME" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "title=ReSukiSU $VERSION" >> "$GITHUB_OUTPUT"
+
+      # 创建 tag
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "${{ steps.ver.outputs.tag }}"
+          git push -f origin "${{ steps.ver.outputs.tag }}"
+
+      # 发布：只上传独立文件，不上传目录
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.title }}
+          body: |
+            自动构建 · ReSukiSU
+
+            ✅ Manager 多平台
+            ✅ Spoofed Manager
+            ✅ LKM 模块
+            ✅ ksud 多平台二进制
+          files: |
+            *.apk
+            android*-lkm/*.ko
+            ksud-*/release/ksud
+          generate_release_notes: false
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
