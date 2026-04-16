@@ -4,6 +4,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   build:
@@ -16,41 +17,37 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # 下载所有产物（全部是原始压缩包）
-      - name: Download all artifacts
+      # ==========================================
+      # ✅ 下载 原始压缩包（绝对不会自动解压）
+      # ==========================================
+      - name: Download all build artifacts (ZIP)
         uses: actions/download-artifact@v8
         with:
-          path: ./
+          path: ./artifacts
 
-      # 查看文件
+      # 查看文件（确认全是压缩包）
       - name: List files
-        run: ls -la
+        run: ls -la ./artifacts
 
       # ==========================================
-      # ✅ 严格按 build.yml 路径 提取版本号
-      # 解压 Manager-release → 读取内部正确路径的 APK
+      # ✅ 正确提取版本号（临时解压，不影响发布）
       # ==========================================
-      - name: Get version from correct APK path
+      - name: Get version from APK inside zip
         id: ver
         run: |
-          # 临时解压（仅读取版本，不影响发布文件）
-          unzip -q Manager-release -d tmp
-          
-          # 【严格按你的 build 脚本内部路径】
+          # 临时解压，只读版本
+          unzip -q ./artifacts/Manager-release -d tmp
+          # 严格匹配 build-manager.yml 内部路径
           APK=$(find tmp -path "*/outputs/apk/release/*.apk" | head -1)
-          
-          # 提取版本号
+          # 精准提取 vX.X.X_XXXX
           VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
-          
-          # 输出
-          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "title=ReSukiSU $VERSION" >> "$GITHUB_OUTPUT"
-          
-          # 删除临时文件（完全不影响发布）
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
+          # 删除临时文件
           rm -rf tmp
 
-      # 创建 tag
-      - name: Create tag
+      # 创建 TAG
+      - name: Create and push tag
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
@@ -58,7 +55,7 @@ jobs:
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
       # ==========================================
-      # ✅ 原封不动上传所有压缩包（一个不改）
+      # ✅ 发布：全部是原始压缩包，一个不改
       # ==========================================
       - name: Create Release
         uses: softprops/action-gh-release@v3
@@ -66,21 +63,7 @@ jobs:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.title }}
           files: |
-            Manager-debug
-            Manager-release
-            Spoofed-Manager-debug
-            Spoofed-Manager-release
-            android12-5.10-lkm
-            android13-5.10-lkm
-            android13-5.15-lkm
-            android14-5.15-lkm
-            android14-6.1-lkm
-            android15-6.6-lkm
-            android16-6.12-lkm
-            ksud-aarch64-linux-android
-            ksud-armv7-linux-androideabi
-            ksud-x86_64-linux-android
-            ksuinit
+            ./artifacts/**/*
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
