@@ -19,32 +19,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 下载所有构建产物
+      # 下载所有构建产物（完整结构）
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
-          path: .
+          path: ./
 
-      # 把所有 apk 统一挪到根目录，方便发布
-      - name: Collect all APKs to root
+      # 列出所有文件（用于调试）
+      - name: List all files
+        run: ls -R
+
+      # 提取所有APK到根目录
+      - name: Collect APKs
         run: |
-          find . -name "*.apk" -exec mv {} . \;
+          find Manager-release -name "*.apk" -exec mv {} . \;
+          find Manager-debug -name "*.apk" -exec mv {} . \;
+          find Spoofed-Manager-release -name "*.apk" -exec mv {} . \;
+          find Spoofed-Manager-debug -name "*.apk" -exec mv {} . \;
 
-      # 看一下最终文件
-      - name: List files
-        run: ls -l
+      # 提取所有 ksud 二进制
+      - name: Collect ksud
+        run: |
+          find ksud-*/release -name "ksud" -exec mv {} . \;
 
-      # 从 APK 文件名提取版本号
-      - name: Extract version from APK
+      # 提取 ksuinit
+      - name: Collect ksuinit
+        run: |
+          find . -name "ksuinit" -exec mv {} . \;
+
+      # 自动从APK文件名获取版本号
+      - name: Get version
         id: ver
         run: |
-          APK=$(find . -maxdepth 1 -name "ReSukiSU_*.apk" | head -1)
-          APK_NAME=$(basename "$APK")
-          VERSION=$(echo "$APK_NAME" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
+          APK=$(ls ReSukiSU_*.apk | head -1)
+          VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+')
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "title=ReSukiSU $VERSION" >> "$GITHUB_OUTPUT"
 
-      # 创建 tag
+      # 创建Tag
       - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"
@@ -52,24 +64,25 @@ jobs:
           git tag -f "${{ steps.ver.outputs.tag }}"
           git push -f origin "${{ steps.ver.outputs.tag }}"
 
-      # 发布：只上传独立文件，不上传目录
-      - name: Create GitHub Release
+      # 发布所有文件（完整不漏）
+      - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
-          name: ${{ steps.ver.outputs.title }}
+          name: "ReSukiSU ${{ steps.ver.outputs.tag }}"
           body: |
-            自动构建 · ReSukiSU
-
+            自动构建 ReSukiSU
             ✅ Manager 多平台
             ✅ Spoofed Manager
             ✅ LKM 模块
-            ✅ ksud 多平台二进制
+            ✅ ksud 多平台
+            ✅ ksuinit
           files: |
             *.apk
-            android*-lkm/*.ko
-            ksud-*/release/ksud
-          generate_release_notes: false
+            *.ko
+            ksud*
+            ksuinit
           overwrite_files: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
