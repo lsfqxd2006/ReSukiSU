@@ -79,7 +79,7 @@ KSU_BRANCH_NAME := $(shell cd $(KSU_SRC); $(GIT_BIN) branch --show-current 2>/de
 
 # make ddk happy
 ifneq ($(KDIR),)
-CONFIG_KSU_FULL_NAME_FORMAT := "%TAG_NAME%-%COMMIT_SHA%@%REPO_NAME%"
+CONFIG_KSU_FULL_NAME_FORMAT ?= "%TAG_NAME%-%COMMIT_SHA%@%REPO_NAME%"
 endif
 
 # call subst to process placeholders
