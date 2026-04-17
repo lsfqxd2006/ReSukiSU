@@ -148,7 +148,7 @@ NativeBridge(getAppProfile, jobject, jstring pkg, jint uid) {
 	jfieldID umountModulesField = GetEnvironment()->GetFieldID(env, cls, "umountModules", "Z");
 
 	GetEnvironment()->SetObjectField(env, obj, keyField, GetEnvironment()->NewStringUTF(env, profile.key));
-	GetEnvironment()->SetIntField(env, obj, currentUidField, profile.current_uid);
+	GetEnvironment()->SetIntField(env, obj, currentUidField, profile.curr_uid);
 
 	if (useDefaultProfile) {
 		// no profile found, so just use default profile:
