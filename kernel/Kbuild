@@ -40,6 +40,10 @@ kernelsu-objs += kpm/compact.o
 kernelsu-objs += kpm/super_access.o
 endif
 
+ifeq ($(CONFIG_ARM64),y)
+kernelsu-objs += compat/apatch_conflict.o
+endif
+
 ccflags-y += -Wno-implicit-function-declaration -Wno-strict-prototypes 
 ccflags-y += $(call cc-disable-warning, int-conversion)
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable -Wno-missing-braces
@@ -221,6 +225,8 @@ endif
 
 ## For susfs stuff ##
 ifeq ($(CONFIG_KSU_SUSFS), y)
+$(error Temporary block SUSFS build due to upstream changes)
+
 include $(KSU_SRC)/tools/inline_hook_check.mk
 ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
 $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
