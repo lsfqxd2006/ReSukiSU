@@ -225,8 +225,6 @@ endif
 
 ## For susfs stuff ##
 ifeq ($(CONFIG_KSU_SUSFS), y)
-$(error Temporary block SUSFS build due to upstream changes)
-
 include $(KSU_SRC)/tools/inline_hook_check.mk
 ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
 $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
