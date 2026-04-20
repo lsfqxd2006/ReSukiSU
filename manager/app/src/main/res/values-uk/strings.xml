@@ -260,7 +260,6 @@
     <string name="check_log">Будь ласка, перевірте лог</string>
     <string name="installing_module">Встановлення модуля %1$d/%2$d</string>
     <string name="module_failed_count">Не вдалося встановити %d новий модуль</string>
-    <string name="module_download_error">Не вдалося завантажити модуль</string>
     <string name="kernel_flashing">Прошивка ядра</string>
     <string name="category_all_apps">Всі</string>
     <string name="category_custom_apps">Власні</string>

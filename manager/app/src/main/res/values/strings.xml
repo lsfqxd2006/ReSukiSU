@@ -342,7 +342,6 @@
     <string name="check_log">Please check the log</string>
     <string name="installing_module">Module being installed %1$d/%2$d</string>
     <string name="module_failed_count">%d Failed to install a new module</string>
-    <string name="module_download_error">Module download failed</string>
     <string name="kernel_flashing">Kernel Flashing</string>
     <string name="warning_of_meta_module_title">Require Meta module</string>
     <string name="warning_of_meta_module_summary">This module want to mount /system, meta module will handle that. Otherwise, it might not work</string>
@@ -684,4 +683,18 @@ Important Note:\n
     <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in Xiaomi settings.</string>
     <string name="module_shortcut_permission_tip_oppo">Please enable \"Desktop shortcut\" permission for this app in OPPO settings.</string>
     <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
+
+    <string name="download_channel_name">Module Downloads</string>
+    <string name="download_progress_title">Downloading %s</string>
+    <string name="download_complete_title">Download complete</string>
+    <string name="download_complete_content">%s downloaded successfully</string>
+    <string name="download_failed_title">Download failed</string>
+    <string name="download_failed_content">Failed to download %s</string>
+    <string name="download">Download</string>
+    <string name="download_cancel">Cancel</string>
+    <string name="download_install">Install</string>
+    <string name="notification_permission_description">Need Notification permission to show download progress.</string>
+    <string name="notification_permission_denied">Download failed: Notification permission is required</string>
+    <string name="storage_permission_description">Need External Storage permission to write file.</string>
+    <string name="storage_permission_denied">Download failed: External Storage permission is required</string>
 </resources>

@@ -279,7 +279,6 @@ Tanamkan: Secara permanen memasang ke sistem</string>
     <string name="check_log">Silakan periksa log</string>
     <string name="installing_module">Memasang modul %1$d/%2$d</string>
     <string name="module_failed_count">Gagal memasang %d modul baru</string>
-    <string name="module_download_error">Gagal mengunduh modul</string>
     <string name="kernel_flashing">Mem-flash Kernel</string>
     <string name="category_all_apps">Semua</string>
     <string name="category_custom_apps">Khusus</string>

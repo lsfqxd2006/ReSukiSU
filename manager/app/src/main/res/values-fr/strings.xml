@@ -249,7 +249,6 @@
     <string name="check_log">Veuillez vérifier le journal</string>
     <string name="installing_module">Module en cours d\'installation %1$d/%2$d</string>
     <string name="module_failed_count">%d a échoué à installer un nouveau module</string>
-    <string name="module_download_error">Le téléchargement du modèle a échoué</string>
     <string name="kernel_flashing">Clignotement du noyau</string>
     <string name="scroll_to_top">En haut</string>
     <string name="scroll_to_bottom">En Bas</string>

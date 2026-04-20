@@ -313,7 +313,6 @@
     <string name="check_log">請檢查日誌</string>
     <string name="installing_module">正在安裝模組 %1$d/%2$d</string>
     <string name="module_failed_count">%d 個模組安裝失敗</string>
-    <string name="module_download_error">模組下載失敗</string>
     <string name="kernel_flashing">正在刷寫內核</string>
     <string name="warning_of_meta_module_title">需要元模組</string>
     <string name="warning_of_meta_module_summary">這個模組需要元模組掛載 /system。否則，它將無法運作</string>

@@ -115,7 +115,7 @@ import com.resukisu.resukisu.ui.theme.getCardElevation
 import com.resukisu.resukisu.ui.theme.haze
 import com.resukisu.resukisu.ui.theme.hazeSource
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
-import com.resukisu.resukisu.ui.util.checkNewVersion
+import com.resukisu.resukisu.ui.util.downloader.checkNewVersion
 import com.resukisu.resukisu.ui.util.module.LatestVersionInfo
 import com.resukisu.resukisu.ui.util.reboot
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel

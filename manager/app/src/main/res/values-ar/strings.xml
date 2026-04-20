@@ -258,7 +258,6 @@
     <string name="check_log">يرجى التحقق من السجل</string>
     <string name="installing_module">تم تثبيت الوحدة %1$d/%2$d</string>
     <string name="module_failed_count">أخفق %d في تثبيت وحدة جديدة</string>
-    <string name="module_download_error">فشل تحميل الوحدة</string>
     <string name="kernel_flashing">ضرب النواة</string>
     <string name="scroll_to_top">في الأعلى</string>
     <string name="scroll_to_bottom">أسفل</string>

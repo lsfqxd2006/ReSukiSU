@@ -241,7 +241,6 @@
     <string name="check_log">Bitte überprüfen Sie das Log</string>
     <string name="installing_module">Modul wird installiert %1$d/%2$d</string>
     <string name="module_failed_count">%d Fehler bei der Installation eines neuen Moduls</string>
-    <string name="module_download_error">Modul-Download fehlgeschlagen</string>
     <string name="kernel_flashing">Kernel-Flashen</string>
     <string name="scroll_to_bottom">Unten</string>
     <string name="selected">Ausgewählt</string>

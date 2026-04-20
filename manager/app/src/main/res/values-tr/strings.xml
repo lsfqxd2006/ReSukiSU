@@ -273,7 +273,6 @@
     <string name="check_log">Lütfen günlük kaydını kontrol edin</string>
     <string name="installing_module">Modül yükleniyor %1$d/%2$d</string>
     <string name="module_failed_count">%d yeni modül yüklenemedi</string>
-    <string name="module_download_error">Modül indirme başarısız</string>
     <string name="kernel_flashing">Çekirdek Yükleniyor</string>
     <string name="warning_of_meta_module_title">Meta modül gerektirir</string>
     <string name="warning_of_meta_module_summary">Bu modül /system bölümünü bağlamak istiyor, meta modül bunu halledecektir. Aksi takdirde çalışmayabilir</string>

@@ -257,7 +257,6 @@
     <string name="check_log">Por favor, verifique o log</string>
     <string name="installing_module">Módulo sendo instalado %1$d/%2$d</string>
     <string name="module_failed_count">%d Falha ao instalar um novo módulo</string>
-    <string name="module_download_error">Falha ao baixar módulo</string>
     <string name="scroll_to_top">Mais votados</string>
     <string name="scroll_to_bottom">Parte Inferior</string>
     <string name="selected">Selecionado</string>

@@ -277,7 +277,6 @@
     <string name="check_log">ログを確認してください</string>
     <string name="installing_module">モジュールをインストール中: %1$d/%2$d</string>
     <string name="module_failed_count">%d モジュールのインストールに失敗しました</string>
-    <string name="module_download_error">モデルのダウンロードに失敗しました</string>
     <string name="kernel_flashing">カーネルをフラッシュ中</string>
     <string name="warning_of_meta_module_title">メタモジュールが必要です</string>
     <string name="warning_of_meta_module_summary">このモジュールは /system をマウントしようとしますが、メタモジュールがそれを処理します。そうでなければ動作しない可能性があります</string>

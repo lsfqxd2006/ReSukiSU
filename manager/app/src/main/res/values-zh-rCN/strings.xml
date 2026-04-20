@@ -338,7 +338,6 @@
     <string name="check_log">请查看日志</string>
     <string name="installing_module">正在安装模块 %1$d/%2$d</string>
     <string name="module_failed_count">%d 个模块安装失败</string>
-    <string name="module_download_error">模块下载失败</string>
     <string name="kernel_flashing">内核刷写</string>
     <string name="warning_of_meta_module_title">需要元模块</string>
     <string name="warning_of_meta_module_summary">这个模块需要挂载一些文件。需要安装元模块，使它正常工作</string>
@@ -669,4 +668,17 @@
     <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用“创建桌面快捷方式”权限。</string>
     <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用“桌面快捷方式”权限。</string>
     <string name="module_shortcut_permission_tip_default">若创建快捷方式失败，请在系统设置中为本应用启用桌面快捷方式权限。</string>
+    <string name="download_channel_name">模块下载</string>
+    <string name="download_progress_title">正在下载 %s</string>
+    <string name="download_complete_title">下载完成</string>
+    <string name="download_complete_content">%s 下载成功</string>
+    <string name="download_failed_title">下载失败</string>
+    <string name="download_failed_content">%s 下载失败</string>
+    <string name="download">下载</string>
+    <string name="download_cancel">取消</string>
+    <string name="download_install">安装</string>
+    <string name="notification_permission_description">需要通知权限来展示下载进度</string>
+    <string name="notification_permission_denied">下载失败，缺失通知权限</string>
+    <string name="storage_permission_description">需要外部存储权限来展示下载进度</string>
+    <string name="storage_permission_denied">下载失败，缺失外部存储权限</string>
 </resources>
