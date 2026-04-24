@@ -42,27 +42,30 @@
 #include "hook/syscall_hook.h"
 #endif
 
-static const char KERNEL_SU_RC[] = "\n"
+// clang-format off
+static const char KERNEL_SU_RC[] = 
+    "\n"
 
-                                   "on post-fs-data\n"
-                                   "	start logd\n"
-                                   // We should wait for the post-fs-data finish
-                                   "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " post-fs-data\n"
-                                   "\n"
+    "on post-fs-data\n"
+    "	start logd\n"
+    // We should wait for the post-fs-data finish
+    "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " post-fs-data\n"
+    "\n"
 
-                                   "on nonencrypted\n"
-                                   "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
-                                   "\n"
+    "on nonencrypted\n"
+    "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "\n"
 
-                                   "on property:vold.decrypt=trigger_restart_framework\n"
-                                   "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
-                                   "\n"
+    "on property:vold.decrypt=trigger_restart_framework\n"
+    "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "\n"
 
-                                   "on property:sys.boot_completed=1\n"
-                                   "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " boot-completed\n"
-                                   "\n"
+    "on property:sys.boot_completed=1\n"
+    "	exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " boot-completed\n"
+    "\n"
 
-                                   "\n";
+    "\n";
+// clang-format on
 
 static void stop_init_rc_hook(void);
 static void stop_execve_hook(void);
@@ -82,7 +85,7 @@ DEFINE_STATIC_KEY_TRUE(ksu_is_init_rc_hook_enabled);
 DEFINE_STATIC_KEY_TRUE(ksu_is_input_hook_enabled);
 
 // use define to avoid ifdef
-#define ksu_init_rc_hook ksu_init_rc_hook_key_false
+#define ksu_init_rc_hook ksu_is_init_rc_hook_enabled
 #define ksu_input_hook ksu_is_input_hook_enabled
 #else
 
