@@ -78,14 +78,12 @@ static void stop_execve_hook(void);
 #if defined(KSU_TP_HOOK)
 static struct work_struct stop_input_hook_work;
 #elif defined(CONFIG_KSU_SUSFS)
-// Hey simonpunk, there better use _TRUE
-// like what i do in ifdef AUTO_XXXX_HOOK
-extern struct static_key_false ksu_init_rc_hook_key_false;
-extern struct static_key_false ksu_input_hook_key_false;
+DEFINE_STATIC_KEY_TRUE(ksu_is_init_rc_hook_enabled);
+DEFINE_STATIC_KEY_TRUE(ksu_is_input_hook_enabled);
 
 // use define to avoid ifdef
 #define ksu_init_rc_hook ksu_init_rc_hook_key_false
-#define ksu_input_hook ksu_input_hook_key_false
+#define ksu_input_hook ksu_is_input_hook_enabled
 #else
 
 #if defined(CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK) && defined(KSU_COMPAT_USE_STATIC_KEY)
@@ -716,7 +714,8 @@ DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
 
 void ksu_stop_ksud_execve_hook(void)
 {
-    static_branch_disable(&ksud_execve_key);
+    if (static_key_enabled(&ksud_execve_key))
+        static_branch_disable(&ksud_execve_key);
 }
 #else
 bool ksud_execve_key __read_mostly = true;
@@ -856,7 +855,8 @@ static void stop_init_rc_hook(void)
     pr_info("unregister init_rc syscall hook\n");
 #else
 #ifdef KSU_INIT_RC_USE_STATIC_KEY
-    static_branch_disable(&ksu_init_rc_hook);
+    if (static_key_enabled(&ksu_init_rc_hook))
+        static_branch_disable(&ksu_init_rc_hook);
 #else
     ksu_init_rc_hook = false;
 #endif
@@ -877,7 +877,8 @@ void ksu_stop_input_hook_runtime(void)
     pr_info("unregister input kprobe: %d!\n", ret);
 #else
 #ifdef KSU_INPUT_USE_STATIC_KEY
-    static_branch_disable(&ksu_input_hook);
+    if (static_key_enabled(&ksu_input_hook))
+        static_branch_disable(&ksu_input_hook);
 #else
     ksu_input_hook = false;
 #endif
