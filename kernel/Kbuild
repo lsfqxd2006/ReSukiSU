@@ -168,7 +168,9 @@ else ifdef CONFIG_KSU_SUSFS
     $(error You should integrate susfs in your kernel.)
   endif
 else
-  $(error Unsupported hook method)
+  ifeq ($(CONFIG_KSU),y)
+    $(error Unsupported hook method)
+  endif
 endif
 
 # Check if KPM is enabled
