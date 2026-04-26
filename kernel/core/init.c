@@ -95,7 +95,7 @@ static inline void ksu_hook_init(void)
     ksu_syscall_hook_manager_init();
 #elif defined(CONFIG_KSU_MANUAL_HOOK)
 // only lsm hook need call init
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 8, 0) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 8, 0)
     ksu_lsm_hook_init();
 #endif
 #elif defined(CONFIG_KSU_SUSFS)
