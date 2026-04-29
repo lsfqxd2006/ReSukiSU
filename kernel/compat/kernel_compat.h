@@ -288,7 +288,7 @@ extern void ksu_run_in_init_if_possible(void (*callback)(void *), void *data);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(KSU_COMPAT_IS_HISI_LEGACY) ||                             \
     defined(KSU_COMPAT_IS_HISI_LEGACY_HM2)
 #define KSU_COMPAT_REQUIRE_SESSION_KEYRING
-extern int ksu_key_permission(key_ref_t key_ref, const struct cred *cred, unsigned perm);
+extern void setup_ksu_cred_session_keyring(void);
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0) || defined(KSU_HAS_MODERN_STATIC_KEY_INTERFACE)

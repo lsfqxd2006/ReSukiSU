@@ -79,10 +79,6 @@ static struct security_hook_list ksu_hooks[] = {
 #ifdef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK
     LSM_HOOK_INIT(file_permission, ksu_file_permission),
 #endif
-
-#ifdef KSU_COMPAT_REQUIRE_SESSION_KEYRING
-    LSM_HOOK_INIT(key_permission, ksu_key_permission),
-#endif
 };
 
 void __init ksu_lsm_hook_init(void)
@@ -117,8 +113,6 @@ void __init ksu_lsm_hook_init(void)
               (struct inode * old_inode, struct dentry * old_dentry, struct inode * new_inode,                         \
                struct dentry * new_dentry),                                                                            \
               (old_inode, old_dentry, new_inode, new_dentry))                                                          \
-    HOOK_ITEM(key_permission, ksu_key_permission, (key_ref_t key_ref, const struct cred *cred, unsigned perm),         \
-              (key_ref, cred, perm))                                                                                   \
     IF_CONFIG_KSU_MANUAL_HOOK_AUTO_SETUID_HOOK(HOOK_ITEM(task_fix_setuid, ksu_task_fix_setuid,                         \
                                                          (struct cred * new, const struct cred *old, int flags),       \
                                                          (new, old, flags)))                                           \
