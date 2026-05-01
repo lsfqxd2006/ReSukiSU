@@ -438,9 +438,11 @@ static int do_set_feature(void __user *arg)
 }
 
 // kcompat for older kernel
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+// https://github.com/torvalds/linux/commit/4f0b9194bc119a9850a99e5e824808e2f468c348
+// 6.8
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0) || defined(KSU_HAS_ANON_INODE_CREATE_FD)
 #define getfd_secure anon_inode_create_getfd
-#elif defined(KSU_HAS_GETFD_SECURE)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0) || defined(KSU_HAS_GETFD_SECURE)
 #define getfd_secure anon_inode_getfd_secure
 #else
 // technically not a secure inode, but, this is the only way so.

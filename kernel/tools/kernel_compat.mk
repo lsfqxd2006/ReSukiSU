@@ -51,19 +51,25 @@ $(info -- $(REPO_NAME)/compat: put_seccomp_filter found)
 ccflags-y += -DKSU_OPTIONAL_SECCOMP_FILTER_RELEASE
 endif
 
+# https://github.com/torvalds/linux/commit/215b674b84dd052098fe6389e32a5afaff8b4d56
+# 5.12-
 ifeq ($(shell grep -q "security_inode_init_security_anon" $(srctree)/include/linux/security.h; echo $$?),0)
 $(info -- $(REPO_NAME)/compat: security_inode_init_security_anon found)
 ccflags-y += -DKSU_OPTIONAL_HAS_INIT_SEC_ANON
 endif
 
+# https://github.com/torvalds/linux/commit/e7e832ce6fa769f800cd7eaebdb0459ad31e0416
+# 5.12-
 ifeq ($(shell grep -q "anon_inode_getfd_secure" $(srctree)/fs/anon_inodes.c; echo $$?),0)
 $(info -- $(REPO_NAME)/compat: anon_inode_getfd_secure found)
 ccflags-y += -DKSU_HAS_GETFD_SECURE
 endif
 
-ifeq ($(shell grep -A1 "^int vfs_getattr" $(srctree)/fs/stat.c | grep -q "query_flags"; echo $$?),0)
-$(info -- $(REPO_NAME)/compat: vfs_getattr() found)
-ccflags-y += -DKSU_HAS_NEW_VFS_GETATTR
+# https://github.com/torvalds/linux/commit/4f0b9194bc119a9850a99e5e824808e2f468c348
+# 6.8-
+ifeq ($(shell grep -q "anon_inode_create_getfd" $(srctree)/fs/anon_inodes.c; echo $$?),0)
+$(info -- $(REPO_NAME)/compat: anon_inode_create_getfd found)
+ccflags-y += -DKSU_HAS_ANON_INODE_CREATE_FD
 endif
 
 ifeq ($(shell grep -q "static inline struct inode \*file_inode" $(srctree)/include/linux/fs.h; echo $$?),0)
@@ -90,14 +96,8 @@ endif
 ## For Huawei EMUI10+ check  
 # Scan Kernel Tree to find CONFIG_HKIP_SELINUX_PROT in ebitmap.h
 ifeq ($(shell grep -q "CONFIG_HKIP_SELINUX_PROT" $(srctree)/security/selinux/ss/ebitmap.h 2>/dev/null; echo $$?),0)
-  $(info -- $(REPO_NAME): CONFIG_HKIP_SELINUX_PROT found!)
-  ccflags-y += -DKSU_COMPAT_IS_HISI_HM2
-endif
-
-# Function proc_ops check
-ifeq ($(shell grep -q "struct proc_ops " $(srctree)/include/linux/proc_fs.h; echo $$?),0)
-$(info -- $(REPO_NAME)/compat: proc_ops found)
-ccflags-y += -DKSU_COMPAT_HAS_PROC_OPS
+$(info -- $(REPO_NAME): CONFIG_HKIP_SELINUX_PROT found!)
+ccflags-y += -DKSU_COMPAT_IS_HISI_HM2
 endif
 
 # policy mutex
@@ -116,6 +116,7 @@ endif
 
 # Function ns_get_path check
 # for kernel 3.19-
+# https://github.com/torvalds/linux/commit/e149ed2b805fefdccf7ccdfc19eca22fdd4514ac
 ifeq ($(shell grep -q "ns_get_path" $(srctree)/fs/nsfs.c; echo $$?),0)
 $(info -- $(REPO_NAME)/compat: ns_get_path found)
 ccflags-y += -DKSU_COMPAT_HAS_NS_GET_PATH
@@ -165,19 +166,6 @@ endif
 ifeq ($(shell grep -q "static inline struct inode..d_inode" $(srctree)/include/linux/dcache.h 2>/dev/null; echo $$?),0)
 $(info -- $(REPO_NAME)/compat: d_inode found)
 ccflags-y += -DKSU_HAS_D_INODE
-endif
-
-# The FUCKING Sulog logic require that
-# it need the whole rewrite
-# Introduce in linux kernel 4.8
-ifeq ($(shell grep -q "time64_to_tm" $(srctree)/include/linux/time.h 2>/dev/null; echo $$?),0)
-$(info -- $(REPO_NAME)/compat: time64_to_tm found)
-ccflags-y += -DKSU_HAS_TIME64
-endif
-
-ifeq ($(shell grep -q "ktime_get_ns" $(srctree)/include/linux/timekeeping.h 2>/dev/null; echo $$?),0)
-$(info -- $(REPO_NAME)/compat: ktime_get_ns found)
-ccflags-y += -DKSU_HAS_TIME_HELPER
 endif
 
 # https://github.com/torvalds/linux/commit/5955102c9984fa081b2d570cfac75c97eecf8f3b
