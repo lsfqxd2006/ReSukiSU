@@ -195,7 +195,10 @@ class MoreSettingsHandlers(
         activity.saveAndApplyCustomBackground(transformedUri)
         state.isCustomBackgroundEnabled = true
         CardConfig.cardAlpha = 0.55f
-        ThemeConfig.backgroundDim = 0f
+        BackgroundManager.saveBackgroundDim(activity, 0.3f)
+        BackgroundManager.saveEnableBlur(activity, false)
+        BackgroundManager.saveUseBackgroundSeedColor(activity, true)
+        BackgroundManager.saveEnableHighContrastMode(activity, false)
         CardConfig.cardElevation = 0.dp
         CardConfig.isCustomBackgroundEnabled = true
         CardConfig.save(activity)
@@ -226,6 +229,9 @@ class MoreSettingsHandlers(
         state.backgroundDim = ThemeConfig.backgroundDim
 
         BackgroundManager.saveBackgroundDim(activity, 0f)
+        BackgroundManager.saveEnableBlur(activity, false)
+        BackgroundManager.saveUseBackgroundSeedColor(activity, false)
+        BackgroundManager.saveEnableHighContrastMode(activity, false)
 
         activity.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("prevent_background_refresh", false)
