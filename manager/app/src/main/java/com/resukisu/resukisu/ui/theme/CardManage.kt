@@ -24,7 +24,7 @@ object CardConfig {
             if (isCustomBackgroundEnabled)
                 _cardAlpha
             else
-                0f
+                1f
         }
         set(value) {
             _cardAlpha = value.coerceIn(0f, 1f)
