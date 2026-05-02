@@ -536,9 +536,9 @@ private fun ModuleBottomSheetContent(
                     checked = viewModel.sortActionFirst,
                     onCheckedChange = { checked ->
                         viewModel.sortActionFirst = checked
-                        prefs.edit {
-                            putBoolean("module_sort_action_first", checked)
-                        }
+                        val editor = prefs.edit()
+                        editor.putBoolean("module_sort_action_first", checked)
+                        editor.apply()
                     },
                     thumbContent = {
                         if (viewModel.sortActionFirst) {
@@ -575,9 +575,9 @@ private fun ModuleBottomSheetContent(
                     checked = viewModel.sortEnabledFirst,
                     onCheckedChange = { checked ->
                         viewModel.sortEnabledFirst = checked
-                        prefs.edit {
-                            putBoolean("module_sort_enabled_first", checked)
-                        }
+                        val editor = prefs.edit()
+                        editor.putBoolean("module_sort_enabled_first", checked)
+                        editor.apply()
                     },
                     thumbContent = {
                         if (viewModel.sortEnabledFirst) {
