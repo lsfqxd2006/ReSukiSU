@@ -286,14 +286,12 @@ fun ModulePage(bottomPadding: Dp) {
 
     LaunchedEffect(Unit) {
         viewModel.search = ""
-    // 无条件读取本地保存的排序状态
         viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
         viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
             viewModel.fetchModuleList()
         }
     }
-
 
     val isSafeMode = Natives.isSafeMode
     val hasMagisk = hasMagisk()
@@ -538,9 +536,9 @@ private fun ModuleBottomSheetContent(
                     checked = viewModel.sortActionFirst,
                     onCheckedChange = { checked ->
                         viewModel.sortActionFirst = checked
-                        val editor = prefs.edit()
-                        editor.putBoolean("module_sort_action_first", checked)
-                        editor.apply()
+                        prefs.edit {
+                            putBoolean("module_sort_action_first", checked)
+                        }
                     },
                     thumbContent = {
                         if (viewModel.sortActionFirst) {
@@ -577,9 +575,9 @@ private fun ModuleBottomSheetContent(
                     checked = viewModel.sortEnabledFirst,
                     onCheckedChange = { checked ->
                         viewModel.sortEnabledFirst = checked
-                        val editor = prefs.edit()
-                        editor.putBoolean("module_sort_enabled_first", checked)
-                        editor.apply()
+                        prefs.edit {
+                            putBoolean("module_sort_enabled_first", checked)
+                        }
                     },
                     thumbContent = {
                         if (viewModel.sortEnabledFirst) {
