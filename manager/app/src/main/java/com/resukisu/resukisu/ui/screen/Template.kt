@@ -57,7 +57,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -363,9 +362,7 @@ fun LabelText(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp
-            ),
+            style = MaterialTheme.typography.labelSmallEmphasized,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
             color = contentColor,
             maxLines = 1,

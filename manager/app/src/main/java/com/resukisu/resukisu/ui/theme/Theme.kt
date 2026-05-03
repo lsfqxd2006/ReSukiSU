@@ -49,7 +49,6 @@ import androidx.compose.ui.zIndex
 import androidx.core.content.edit
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
-import androidx.core.graphics.toColor
 import androidx.core.net.toUri
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -533,6 +532,8 @@ private fun BackgroundInitializer(uri: Uri) {
 
 @Composable
 private fun generateTypography(): androidx.compose.material3.Typography {
+    val darkMode = isInDarkTheme(ThemeConfig.forceDarkMode)
+
     fun generateShadow(originalShadow: Shadow?): Shadow? {
         if (!ThemeConfig.isHighContrastMode) return originalShadow
         val shadow = originalShadow ?: Shadow(
@@ -540,9 +541,7 @@ private fun generateTypography(): androidx.compose.material3.Typography {
             blurRadius = 0f
         )
         return shadow.copy(
-            color = if (backgroundSeedColor.toColor()
-                    .luminance() >= 0.5f
-            ) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.7f)
+            color = if (darkMode) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
         )
     }
 
