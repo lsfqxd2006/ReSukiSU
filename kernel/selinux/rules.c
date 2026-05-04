@@ -109,7 +109,6 @@ static inline void ksu_lock_sel_mutex_legacy(void)
 // 4.14- mostly
 #else
     mutex_lock(&ksu_sel_mutex);
-    preempt_disable();
 #endif
 }
 

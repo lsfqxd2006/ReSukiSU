@@ -141,7 +141,7 @@ int __init kernelsu_init(void)
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("**                                                         **");
     pr_alert("**          Enable Unsafe memory access for SELinux        **");
-    pr_alart("**                You maybe face Kernel Panic              **");
+    pr_alert("**                You maybe face Kernel Panic              **");
     pr_alert("**                                                         **");
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
