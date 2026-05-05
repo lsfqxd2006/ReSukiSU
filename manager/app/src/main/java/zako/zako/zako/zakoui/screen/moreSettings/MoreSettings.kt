@@ -48,7 +48,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Wallpaper
@@ -82,7 +81,6 @@ import androidx.core.content.FileProvider
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.MainActivity
 import com.resukisu.resukisu.ui.component.ConfirmResult
-import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
@@ -275,16 +273,6 @@ fun MoreSettingsScreen() {
                     state = settingsState,
                     handlers = settingsHandlers
                 )
-            }
-
-            if (ksuIsValid()) {
-                // 高级设置
-                item {
-                    AdvancedSettings(
-                        state = settingsState,
-                        handlers = settingsHandlers
-                    )
-                }
             }
 
             item {
@@ -484,45 +472,6 @@ private fun SplicedGroupScope.hideOptionsSettings(
             checked = state.isHideTagRow,
             onCheckedChange = handlers::handleHideTagRowChange
         )
-    }
-}
-
-@Composable
-private fun AdvancedSettings(
-    state: MoreSettingsState,
-    handlers: MoreSettingsHandlers
-) {
-
-    SplicedColumnGroup(title = stringResource(R.string.advanced_settings)) {
-        item {
-            // SELinux 开关
-            SettingsSwitchWidget(
-                icon = Icons.Filled.Security,
-                title = stringResource(R.string.selinux),
-                description = if (state.selinuxEnabled)
-                    stringResource(R.string.selinux_enabled) else
-                    stringResource(R.string.selinux_disabled),
-                checked = state.selinuxEnabled,
-                onCheckedChange = handlers::handleSelinuxChange
-            )
-        }
-
-        item {
-            // 动态管理器设置
-            SettingsJumpPageWidget(
-                icon = Icons.Filled.Security,
-                title = stringResource(R.string.dynamic_manager_title),
-                description = if (state.isDynamicSignEnabled) {
-                    stringResource(
-                        R.string.dynamic_manager_enabled_summary,
-                        state.dynamicSignSize
-                    )
-                } else {
-                    stringResource(R.string.dynamic_manager_disabled)
-                },
-                onClick = { state.showDynamicSignDialog = true }
-            )
-        }
     }
 }
 
