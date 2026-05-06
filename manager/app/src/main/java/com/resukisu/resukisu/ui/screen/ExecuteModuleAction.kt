@@ -52,8 +52,8 @@ import com.resukisu.resukisu.ui.component.settings.AppBackButton
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
-import com.resukisu.resukisu.ui.theme.haze
-import com.resukisu.resukisu.ui.theme.hazeSource
+import com.resukisu.resukisu.ui.theme.blurEffect
+import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.runModuleAction
 import kotlinx.coroutines.Dispatchers
@@ -180,7 +180,7 @@ fun ExecuteModuleActionScreen(moduleId: String) {
             modifier = Modifier
                 .fillMaxSize(1f)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(),
+                .blurSource(),
         ) {
             item {
                 Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding()))
@@ -210,8 +210,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     LargeFlexibleTopAppBar(
-        modifier = Modifier.haze(
-            scrollBehavior.state.collapsedFraction
+        modifier = Modifier.blurEffect(
         ),
         title = { Text(stringResource(R.string.action)) },
         scrollBehavior = scrollBehavior,

@@ -39,7 +39,7 @@ import com.resukisu.resukisu.ui.MainActivity
 import com.resukisu.resukisu.ui.screen.BottomBarDestination
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
-import com.resukisu.resukisu.ui.theme.haze
+import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.util.LocalHandlePageChange
 import com.resukisu.resukisu.ui.util.LocalSelectedPage
 import com.resukisu.resukisu.ui.util.getKpmModuleCount
@@ -98,7 +98,7 @@ fun NavigationBar(
                 .windowInsetsPadding(
                     WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
                 )
-                .haze(),
+                .blurEffect(),
             containerColor =
                 if (ThemeConfig.isEnableBlur)
                     Color.Transparent
@@ -126,7 +126,7 @@ fun NavigationBar(
                 .windowInsetsPadding(
                     WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
                 )
-                .haze(),
+                .blurEffect(),
             colors = WideNavigationRailColors(
                 containerColor =
                     if (ThemeConfig.isEnableBlur)

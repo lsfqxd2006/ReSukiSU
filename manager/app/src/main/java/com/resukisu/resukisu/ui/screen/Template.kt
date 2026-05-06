@@ -68,8 +68,8 @@ import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
-import com.resukisu.resukisu.ui.theme.haze
-import com.resukisu.resukisu.ui.theme.hazeSource
+import com.resukisu.resukisu.ui.theme.blurEffect
+import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.viewmodel.TemplateViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -182,7 +182,7 @@ fun AppProfileTemplateScreen() {
                 .nestedScroll(
                     scrollBehavior.nestedScrollConnection
                 )
-                .hazeSource(),
+                .blurSource(),
             isRefreshing = viewModel.isRefreshing,
             onRefresh = {
                 scope.launch { viewModel.fetchTemplates() }
@@ -287,8 +287,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     LargeFlexibleTopAppBar(
-        modifier = Modifier.haze(
-            scrollBehavior.state.collapsedFraction
+        modifier = Modifier.blurEffect(
         ),
         title = {
             Text(stringResource(R.string.settings_profile_template))

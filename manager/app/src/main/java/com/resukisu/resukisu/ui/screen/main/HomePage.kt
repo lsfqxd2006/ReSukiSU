@@ -126,10 +126,10 @@ import com.resukisu.resukisu.ui.screen.LabelText
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.CardConfig.cardElevation
 import com.resukisu.resukisu.ui.theme.ThemeConfig
+import com.resukisu.resukisu.ui.theme.blurEffect
+import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.getCardColors
 import com.resukisu.resukisu.ui.theme.getCardElevation
-import com.resukisu.resukisu.ui.theme.haze
-import com.resukisu.resukisu.ui.theme.hazeSource
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.downloader.checkNewVersion
 import com.resukisu.resukisu.ui.util.module.LatestVersionInfo
@@ -289,7 +289,7 @@ fun HomePage(
             onRefresh = { viewModel.refreshData(context) },
             modifier = Modifier
                 .fillMaxSize()
-                .hazeSource(),
+                .blurSource(),
             indicator = {
                 PullToRefreshDefaults.LoadingIndicator(
                     modifier = Modifier
@@ -557,9 +557,7 @@ private fun TopBar(
     }
 
     LargeFlexibleTopAppBar(
-        modifier = Modifier.haze(
-            scrollBehavior?.state?.collapsedFraction ?: 1f
-        ),
+        modifier = Modifier.blurEffect(),
         title = {
             Text(
                 text = stringResource(R.string.app_name)

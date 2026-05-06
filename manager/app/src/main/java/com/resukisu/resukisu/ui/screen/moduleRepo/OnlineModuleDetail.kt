@@ -94,8 +94,8 @@ import com.resukisu.resukisu.ui.navigation.Navigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
-import com.resukisu.resukisu.ui.theme.haze
-import com.resukisu.resukisu.ui.theme.hazeSource
+import com.resukisu.resukisu.ui.theme.blurEffect
+import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalPermissionRequestInterface
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.module.ReleaseAssetInfo
@@ -130,8 +130,7 @@ fun OnlineModuleDetailScreen(module: ModuleRepoViewModel.RepoModule) {
     Scaffold(
         topBar = {
             Column(
-                modifier = Modifier.haze(
-                    scrollBehavior.state.collapsedFraction
+                modifier = Modifier.blurEffect(
                 )
             ) {
                 LargeFlexibleTopAppBar(
@@ -214,7 +213,7 @@ fun OnlineModuleDetailScreen(module: ModuleRepoViewModel.RepoModule) {
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource()
+                .blurSource()
         ) {
 
             HorizontalPager(
