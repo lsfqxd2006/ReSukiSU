@@ -507,7 +507,9 @@ out:
 
     return 0;
 
+#ifndef CONFIG_KSU_SUSFS
 unhook:
+#endif
     ksu_selinux_hide_unhook();
     return -ENOSYS;
 }

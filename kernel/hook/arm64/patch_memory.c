@@ -86,12 +86,22 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
         pr_info("Address 0x%lx maps to a PUD-level huge page\n", addr);
         return __pud_to_phys(*pud) + ((addr & ~PUD_MASK));
     }
+#elif defined(pud_sect)
+    if (pud_sect(*pud)) {
+        pr_info("Address 0x%lx maps to a PUD-level huge page\n", addr);
+        return __pud_to_phys(*pud) + ((addr & ~PUD_MASK));
+    }
 #endif
 
     pmd = pmd_offset(pud, addr);
     pr_info("pmd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pmd, (uintptr_t)pmd_val(*pmd));
 #if defined(pmd_leaf)
     if (pmd_leaf(*pmd)) {
+        pr_info("Address 0x%lx maps to a PMD-level huge page\n", addr);
+        return __pmd_to_phys(*pmd) + ((addr & ~PMD_MASK));
+    }
+#elif defined(pmd_sect)
+    if (pmd_sect(*pmd)) {
         pr_info("Address 0x%lx maps to a PMD-level huge page\n", addr);
         return __pmd_to_phys(*pmd) + ((addr & ~PMD_MASK));
     }
