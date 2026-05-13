@@ -106,7 +106,6 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
         return __pmd_to_phys(*pmd) + ((addr & ~PMD_MASK));
     }
 #endif
-#endif
 
     if (pmd_none(*pmd) || pmd_bad(*pmd))
         goto fail;
