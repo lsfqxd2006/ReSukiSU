@@ -24,11 +24,21 @@
 
 #include <linux/sched.h>
 
-#ifndef __pte_to_phys
 // https://github.com/torvalds/linux/blob/v5.4/arch/arm64/include/asm/pgtable.h#L61
+#ifndef PTE_ADDR_LOW
 #define PTE_ADDR_LOW (((_AT(pteval_t, 1) << (48 - PAGE_SHIFT)) - 1) << PAGE_SHIFT)
+#endif
+
+#ifndef PTE_ADDR_MASK
 #define PTE_ADDR_MASK PTE_ADDR_LOW
+#endif
+
+#ifndef __pte_to_phys
 #define __pte_to_phys(pte) (pte_val(pte) & PTE_ADDR_MASK)
+#endif
+
+#ifndef __pmd_to_phys
+#define __pmd_to_phys(pmd) __pte_to_phys(pmd_pte(pmd))
 #endif
 
 // https://github.com/torvalds/linux/commit/3b8c9f1cdfc506e94e992ae66b68bbe416f89610
