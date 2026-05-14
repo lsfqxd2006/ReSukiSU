@@ -37,6 +37,10 @@
 #define __pte_to_phys(pte) (pte_val(pte) & PTE_ADDR_MASK)
 #endif
 
+#ifndef __pud_to_phys
+#define __pud_to_phys(pud) __pte_to_phys(pud_pte(pud))
+#endif
+
 #ifndef __pmd_to_phys
 #define __pmd_to_phys(pmd) __pte_to_phys(pmd_pte(pmd))
 #endif
