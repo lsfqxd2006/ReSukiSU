@@ -81,7 +81,8 @@ static void (*context_struct_compute_av_fn)(struct policydb *policydb, struct co
                                             struct context *tcontext, u16 tclass, struct av_decision *avd,
                                             struct extended_perms *xperms) = NULL;
 #elif defined(KSU_COMPAT_USE_SELINUX_STATE)
-static struct selinux_state fake_state;
+// remove static for susfs
+struct selinux_state fake_state;
 #else
 static int dump_masked_av_helper(void *k, void *d, void *args);
 static int context_struct_to_string(struct context *context, char **scontext, u32 *scontext_len);
