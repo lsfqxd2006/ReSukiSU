@@ -562,17 +562,6 @@ private fun CustomizationSettings(
 ) {
     SplicedColumnGroup(title = stringResource(R.string.custom_settings)) {
         item {
-            // 图标切换
-            SettingsSwitchWidget(
-                icon = Icons.Default.Android,
-                title = stringResource(R.string.icon_switch_title),
-                description = stringResource(R.string.icon_switch_summary),
-                checked = state.useAltIcon,
-                onCheckedChange = handlers::handleIconChange
-            )
-        }
-
-        item {
             // 显示更多模块信息
             SettingsSwitchWidget(
                 icon = Icons.Filled.Info,

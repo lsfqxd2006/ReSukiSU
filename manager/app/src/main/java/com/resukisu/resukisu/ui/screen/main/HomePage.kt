@@ -14,8 +14,10 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,8 +33,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.RotateRight
 import androidx.compose.material.icons.filled.Adb
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Archive
@@ -44,19 +49,24 @@ import androidx.compose.material.icons.filled.LocalPolice
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.DeveloperMode
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.twotone.Error
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -65,6 +75,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -73,6 +84,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,13 +94,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
@@ -129,6 +144,100 @@ import kotlinx.coroutines.withContext
  * @author ShirkNeko
  * @date 2025/9/29.
  */
+
+// ==================== 重启菜单相关数据类和组件 ====================
+
+private data class RebootOption(
+    @StringRes val titleRes: Int,
+    val reason: String,
+    val icon: ImageVector
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RebootDialog(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    options: List<RebootOption>,
+    onReboot: (String) -> Unit
+) {
+    if (!show) return
+
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val appDpi = prefs.getInt("app_dpi", 0)          // 读取保存的 DPI 值
+    val defaultDensity = LocalDensity.current
+
+    // 计算自定义密度（基准 160）
+    val customDensity = remember(appDpi, defaultDensity.fontScale) {
+        if (appDpi > 0) {
+            val newDensity = appDpi.toFloat() / 160f
+            Density(density = newDensity, fontScale = defaultDensity.fontScale)
+        } else {
+            defaultDensity
+        }
+    }
+
+    BasicAlertDialog(onDismissRequest = onDismiss) {
+        // 覆盖 LocalDensity，使内部所有 dp 和 sp 按自定义密度换算
+        CompositionLocalProvider(LocalDensity provides customDensity) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Column(
+                        modifier = Modifier.padding(top = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        options.forEach { option ->
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                onClick = {
+                                    onDismiss()
+                                    onReboot(option.reason)
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = option.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = stringResource(option.titleRes),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ==================== 主界面 ====================
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomePage(
@@ -414,13 +523,6 @@ fun UpdateCard() {
     }
 }
 
-@Composable
-fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
-    DropdownMenuItem(
-        text = { Text(stringResource(id)) },
-        onClick = { reboot(reason) })
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
@@ -428,6 +530,31 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val navigator = LocalNavigator.current
+    var showRebootDialog by remember { mutableStateOf(false) }
+
+    // 获取 context 以避免在 remember 内部直接调用 LocalContext.current
+    val context = LocalContext.current
+
+    // 动态构建重启选项列表（保留原有所有选项，包括软重启、userspace等）
+    val rebootOptions = remember(context) {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
+        val list = mutableListOf(
+            RebootOption(R.string.reboot, "", Icons.Filled.Refresh),
+            RebootOption(R.string.reboot_soft, "soft_reboot", Icons.AutoMirrored.Outlined.RotateRight)
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
+            list.add(RebootOption(R.string.reboot_userspace, "userspace", Icons.Filled.Refresh))
+        }
+        list.addAll(
+            listOf(
+                RebootOption(R.string.reboot_recovery, "recovery", Icons.Outlined.SystemUpdate),
+                RebootOption(R.string.reboot_bootloader, "bootloader", Icons.Outlined.Memory),
+                RebootOption(R.string.reboot_download, "download", Icons.Outlined.Download),
+                RebootOption(R.string.reboot_edl, "edl", Icons.Outlined.DeveloperMode)
+            )
+        )
+        list
+    }
 
     LargeFlexibleTopAppBar(
         modifier = Modifier.blurEffect(),
@@ -462,35 +589,23 @@ private fun TopBar(
                     }
                 }
 
-                // 重启按钮
-                var showDropdown by remember { mutableStateOf(false) }
+                // 重启按钮 - 美观的弹出对话框
                 KsuIsValid {
                     IconButton(onClick = {
-                        showDropdown = true
+                        showRebootDialog = true
                     }) {
                         Icon(
                             imageVector = Icons.Filled.PowerSettingsNew,
                             contentDescription = stringResource(id = R.string.reboot)
                         )
-
-                        DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                            showDropdown = false
-                        }) {
-                            RebootDropdownItem(id = R.string.reboot)
-                            RebootDropdownItem(id = R.string.reboot_soft, reason = "soft_reboot")
-
-                            val pm =
-                                LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-                            @Suppress("DEPRECATION")
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
-                                RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
-                            }
-                            RebootDropdownItem(id = R.string.reboot_recovery, reason = "recovery")
-                            RebootDropdownItem(id = R.string.reboot_bootloader, reason = "bootloader")
-                            RebootDropdownItem(id = R.string.reboot_download, reason = "download")
-                            RebootDropdownItem(id = R.string.reboot_edl, reason = "edl")
-                        }
                     }
+
+                    RebootDialog(
+                        show = showRebootDialog,
+                        onDismiss = { showRebootDialog = false },
+                        options = rebootOptions,
+                        onReboot = { reason -> reboot(reason) }
+                    )
                 }
             }
         },

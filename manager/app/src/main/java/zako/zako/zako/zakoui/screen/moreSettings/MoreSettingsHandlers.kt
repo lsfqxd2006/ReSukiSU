@@ -21,7 +21,6 @@ import com.resukisu.resukisu.ui.theme.saveDynamicColorState
 import com.resukisu.resukisu.ui.theme.saveThemeColors
 import com.resukisu.resukisu.ui.theme.saveThemeMode
 import zako.zako.zako.zakoui.screen.moreSettings.state.MoreSettingsState
-import zako.zako.zako.zakoui.screen.moreSettings.util.toggleLauncherIcon
 
 /**
  * 更多设置处理器
@@ -249,16 +248,6 @@ class MoreSettingsHandlers(
     fun handleBackgroundDimChange(newValue: Float) {
         state.backgroundDim = newValue
         BackgroundManager.saveBackgroundDim(activity, newValue)
-    }
-
-    /**
-     * 处理图标变更
-     */
-    fun handleIconChange(newValue: Boolean) {
-        prefs.edit { putBoolean("use_alt_icon", newValue) }
-        state.useAltIcon = newValue
-        toggleLauncherIcon(activity, newValue)
-        Toast.makeText(activity, activity.getString(R.string.icon_switched), Toast.LENGTH_SHORT).show()
     }
 
     /**
