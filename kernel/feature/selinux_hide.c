@@ -37,7 +37,13 @@
 #include "selinux_hide.h"
 #include "compat/kernel_compat.h"
 
-#ifndef CONFIG_KSU_SUSFS
+#ifdef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
+#define __maybe_static
+#else
+#define __maybe_static static
+#endif
+
+#ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 enum sel_inos {
     SEL_ROOT_INO = 2,
     SEL_LOAD, /* load policy */
@@ -66,23 +72,24 @@ typedef ssize_t (*write_op_fn)(struct file *, char *, size_t);
 
 static write_op_fn *selinux_write_op;
 
-#endif // #ifndef CONFIG_KSU_SUSFS
+#endif // #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-// remove static for susfs
-int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len, u32 *sid,
-                                        u32 def_sid, gfp_t gfp_flags);
-int security_sid_to_context_with_policy(struct selinux_policy *policy, u32 sid, char **scontext, u32 *scontext_len);
-void security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
-                                          struct av_decision *avd);
+// remove static in susfs
+__maybe_static int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext,
+                                                       u32 scontext_len, u32 *sid, u32 def_sid, gfp_t gfp_flags);
+__maybe_static int security_sid_to_context_with_policy(struct selinux_policy *policy, u32 sid, char **scontext,
+                                                       u32 *scontext_len);
+__maybe_static void security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
+                                                         struct av_decision *avd);
 static void (*security_dump_masked_av_fn)(struct policydb *policydb, struct context *scontext, struct context *tcontext,
                                           u16 tclass, u32 permissions, const char *reason) = NULL;
 static void (*context_struct_compute_av_fn)(struct policydb *policydb, struct context *scontext,
                                             struct context *tcontext, u16 tclass, struct av_decision *avd,
                                             struct extended_perms *xperms) = NULL;
 #elif defined(KSU_COMPAT_USE_SELINUX_STATE)
-// remove static for susfs
-struct selinux_state fake_state;
+// remove static in susfs
+__maybe_static struct selinux_state fake_state;
 #else
 static int dump_masked_av_helper(void *k, void *d, void *args);
 static int context_struct_to_string(struct context *context, char **scontext, u32 *scontext_len);
@@ -104,7 +111,7 @@ static int ksu_security_sid_to_context(u32 sid, char **scontext, u32 *scontext_l
 static void ksu_security_compute_av_user(u32 ssid, u32 tsid, u16 tclass, struct av_decision *avd);
 #endif
 
-#ifndef CONFIG_KSU_SUSFS
+#ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 
 static write_op_fn *context_write, *access_write;
 static write_op_fn orig_context_write, orig_access_write;
@@ -257,7 +264,7 @@ out:
     return length;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) && !defined(CONFIG_KSU_SUSFS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) && !defined(KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE)
 struct ksu_lsm_hook selinux_setprocattr_hook =
     KSU_LSM_HOOK_INIT(setprocattr, "selinux_setprocattr", ksu_handle_selinux_setprocattr, 0);
 #endif
@@ -366,7 +373,7 @@ extern void ksu_register_setprocattr_lsm_hook();
 #define ksu_selinux_hide_unhook()                                                                                      \
     do {                                                                                                               \
     } while (0)
-#endif // #ifndef CONFIG_KSU_SUSFS
+#endif // #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 
 static int ksu_selinux_hide_enable()
 {
@@ -433,7 +440,7 @@ static int ksu_selinux_hide_enable()
 
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
 
-#ifndef CONFIG_KSU_SUSFS
+#ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
     selinux_write_op = (write_op_fn *)kallsyms_lookup_name("write_op");
     if (!selinux_write_op) {
         pr_err("selinux_hide: no write_op found!\n");
@@ -504,11 +511,11 @@ out:
     ksu_register_setprocattr_lsm_hook();
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 
-#endif // #ifndef CONFIG_KSU_SUSFS
+#endif // #ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 
     return 0;
 
-#ifndef CONFIG_KSU_SUSFS
+#ifndef KSU_COMPAT_HAS_SUSFS_FEATURE_SELINUX_HIDE
 unhook:
 #endif
     ksu_selinux_hide_unhook();
@@ -706,9 +713,9 @@ out:
     return rc;
 }
 
-// remove static for susfs
-int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len, u32 *sid,
-                                        u32 def_sid, gfp_t gfp_flags)
+// remove static in susfs
+__maybe_static int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext,
+                                                       u32 scontext_len, u32 *sid, u32 def_sid, gfp_t gfp_flags)
 {
     struct policydb *policydb;
     struct sidtab *sidtab;
@@ -814,7 +821,9 @@ static int sidtab_entry_to_string(struct policydb *p, struct sidtab *sidtab, str
     return rc;
 }
 
-int security_sid_to_context_with_policy(struct selinux_policy *policy, u32 sid, char **scontext, u32 *scontext_len)
+// remove static in susfs
+__maybe_static int security_sid_to_context_with_policy(struct selinux_policy *policy, u32 sid, char **scontext,
+                                                       u32 *scontext_len)
 {
     struct policydb *policydb;
     struct sidtab *sidtab;
@@ -1186,8 +1195,9 @@ static void context_struct_compute_av(struct policydb *policydb, struct context 
     type_attribute_bounds_av(policydb, scontext, tcontext, tclass, avd);
 }
 
-void __nocfi security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
-                                                  struct av_decision *avd)
+// remove static in susfs
+__maybe_static void __nocfi security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid,
+                                                                 u16 tclass, struct av_decision *avd)
 {
     struct policydb *policydb;
     struct sidtab *sidtab;
