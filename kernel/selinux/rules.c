@@ -221,6 +221,9 @@ void apply_kernelsu_rules()
     pr_info("len of ksu_dup_policydb (backup_db) output: %d", len);
     if (len < 0) {
         pr_err("failed to dup policydb");
+        kfree(backup_policydb);
+        backup_policydb = NULL;
+        backup_sidtab = NULL;
     } else {
         backup_sidtab = kzalloc(sizeof(*backup_sidtab), GFP_KERNEL);
         if (!backup_sidtab) {
@@ -248,7 +251,6 @@ void apply_kernelsu_rules()
     pr_info("len of ksu_dup_policydb output: %d", len);
 
     if (len < 0) {
-        kfree(oldpolicydb);
         pr_err("failed to dup policydb\n");
         goto out_free;
     }
