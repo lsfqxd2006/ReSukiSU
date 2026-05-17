@@ -133,8 +133,9 @@ else
   endif
 endif
 
+kernelsu-objs += infra/symbol_resolver.o
+
 ifeq ($(KERNEL_TYPE), GKI 2.0)
-  kernelsu-objs += infra/symbol_resolver.o
   kernelsu-objs += hook/lsm_hook_magic.o
 endif
 

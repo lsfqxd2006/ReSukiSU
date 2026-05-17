@@ -33,6 +33,7 @@
 #include "feature/dynamic_manager.h"
 #include "feature/sucompat.h"
 #include "feature/selinux_hide.h"
+#include "infra/symbol_resolver.h"
 
 #ifdef CONFIG_ARM64
 #include "compat/apatch_conflict.h"
@@ -99,6 +100,7 @@ bool ksu_late_loaded;
 
 static inline void __init ksu_hook_init(void)
 {
+    ksu_init_symbol_resolver();
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
     ksu_lsm_hook_magic_init();
 #endif
