@@ -122,38 +122,7 @@ fun AboutScreen() {
             }
 
             item {
-                WarningCard(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp, bottom = 12.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                        alpha = CardConfig.cardAlpha
-                    ),
-                    message = AnnotatedString.fromHtml(
-                        htmlString = stringResource(
-                            id = R.string.about_anime_character_sticker,
-                            "<b>怡子曰曰</b>",
-                            "<b>明风 OuO</b>",
-                            "<b><a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt\">CC BY-NC-SA 4.0</a></b>"
-                        ),
-                        linkStyles = TextLinkStyles(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                textDecoration = TextDecoration.Underline
-                            ),
-                            pressedStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                background = MaterialTheme.colorScheme.secondaryContainer,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        )
-                    )
-                )
-            }
-
-            item {
-                SegmentedColumn(
-                    title = stringResource(R.string.about)
+                SplicedColumnGroup(
                 ) {
                     item {
                         SettingsJumpPageWidget(
