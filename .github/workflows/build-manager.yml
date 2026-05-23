@@ -123,6 +123,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Determine commit for build
         id: commit
@@ -230,7 +231,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
+          persist-credentials: false
       - name: Determine manager variant
         id: determine
         run: |
