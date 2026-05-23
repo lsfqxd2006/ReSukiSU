@@ -122,7 +122,6 @@ fun AboutScreen() {
             }
 
             item {
-                SplicedColumnGroup(
                 ) {
                     item {
                         SettingsJumpPageWidget(
