@@ -1077,8 +1077,7 @@ private fun StatusCardPreview() {
                 ksuVersion = 1,
                 lkmMode = null,
                 kernelVersion = KernelVersion(5, 10, 101),
-                is
-              Available = true
+                isRootAvailable = true
             )
         )
 
