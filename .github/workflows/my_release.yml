@@ -1,4 +1,10 @@
 name: Release ReSukiSU
+
+permissions:
+  contents: write
+  actions: read
+  packages: read
+  
 on:
   workflow_dispatch:
 
