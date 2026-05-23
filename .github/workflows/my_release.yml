@@ -1,9 +1,4 @@
 name: Release ReSukiSU
-
-permissions:
-  contents: write
-  actions: read
-  packages: read
   
 on:
   workflow_dispatch:
@@ -11,7 +6,7 @@ on:
 permissions:
   contents: write
   actions: read
-
+  packages: read
 jobs:
   build:
     uses: ./.github/workflows/build-manager.yml
