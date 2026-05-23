@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Copyright
 import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -51,8 +53,8 @@ import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.settings.AppBackButton
-import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
 import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
+import com.resukisu.resukisu.ui.component.settings.SplicedColumnGroup
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Navigator
 import com.resukisu.resukisu.ui.navigation.Route
@@ -122,6 +124,7 @@ fun AboutScreen() {
             }
 
             item {
+                SplicedColumnGroup(
                 ) {
                     item {
                         SettingsJumpPageWidget(
@@ -175,11 +178,13 @@ fun AboutScreenPreview() {
 
 @Composable
 private fun StatusCard() {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer.copy(
-            alpha = CardConfig.cardAlpha
-        ),
-        shape = RoundedCornerShape(16.dp)
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                alpha = CardConfig.cardAlpha
+            ),
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     ) {
         Column(
             modifier = Modifier
