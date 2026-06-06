@@ -41,6 +41,9 @@ jobs:
       contents: read
       security-events: write
       packages: read
+    # 新增这两行，仅此一处新增
+    env:
+      CODEQL_EXTRACTOR_KOTLIN_DISABLE: true
 
     strategy:
       fail-fast: false
@@ -67,7 +70,6 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          tools: nightly
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
