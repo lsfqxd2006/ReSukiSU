@@ -67,6 +67,8 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          # 关键配置：拉最新CodeQL工具链，原生支持Kotlin2.4.0
+          tools: latest
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
