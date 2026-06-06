@@ -41,9 +41,6 @@ jobs:
       contents: read
       security-events: write
       packages: read
-    # 新增这两行，仅此一处新增
-    env:
-      CODEQL_EXTRACTOR_KOTLIN_DISABLE: true
 
     strategy:
       fail-fast: false
@@ -58,7 +55,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
-          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -89,7 +85,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew assembleDebug --no-daemon --no-configuration-cache
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
