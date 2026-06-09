@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -71,6 +72,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.resukisu.resukisu.KernelSUApplication
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.ui.activity.PermissionRequestInterface
 import com.resukisu.resukisu.ui.activity.component.NavigationBar
@@ -121,6 +123,7 @@ import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.install
 import com.resukisu.resukisu.ui.util.rootAvailable
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
+import com.resukisu.resukisu.ui.viewmodel.ModuleViewModel
 import com.resukisu.resukisu.ui.viewmodel.PredictiveBackAnimation
 import com.resukisu.resukisu.ui.viewmodel.SettingsViewModel
 import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
@@ -141,6 +144,7 @@ import kotlin.coroutines.resume
 class MainActivity : ComponentActivity() {
     private lateinit var superUserViewModel: SuperUserViewModel
     private lateinit var homeViewModel: HomeViewModel
+    private lateinit var moduleViewModel: ModuleViewModel
     private lateinit var settingsViewModel: SettingsViewModel
 
     private var showConfirmationDialog = mutableStateOf(false)
@@ -157,6 +161,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
+            val splashScreen = installSplashScreen()
 
             // Enable edge to edge
             enableEdgeToEdge()
@@ -166,6 +171,12 @@ class MainActivity : ComponentActivity() {
             }
 
             super.onCreate(savedInstanceState)
+
+            homeViewModel =
+                ViewModelProvider(applicationContext as KernelSUApplication)[HomeViewModel::class.java]
+            splashScreen.setKeepOnScreenCondition {
+                !homeViewModel.uiState.value.isInitialDataLoaded
+            }
 
             val isManager = Natives.isManager
             if (isManager && !Natives.requireNewKernel()) {
@@ -639,8 +650,12 @@ class MainActivity : ComponentActivity() {
 
     private fun initializeViewModels() {
         superUserViewModel = SuperUserViewModel()
-        homeViewModel = HomeViewModel()
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        homeViewModel =
+            ViewModelProvider(applicationContext as KernelSUApplication)[HomeViewModel::class.java]
+        settingsViewModel =
+            ViewModelProvider(applicationContext as KernelSUApplication)[SettingsViewModel::class.java]
+        moduleViewModel =
+            ViewModelProvider(applicationContext as KernelSUApplication)[ModuleViewModel::class.java]
 
         // 设置主题变化监听器
         themeChangeObserver = ThemeUtils.registerThemeChangeObserver(this)
