@@ -40,7 +40,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.RotateRight
 import androidx.compose.material.icons.filled.Adb
 import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
@@ -88,7 +87,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -107,6 +105,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.KernelSUApplication
@@ -130,10 +129,11 @@ import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.getCardColors
 import com.resukisu.resukisu.ui.theme.getCardElevation
+import com.resukisu.resukisu.ui.theme.renderBackgroundBlur
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
-import com.resukisu.resukisu.ui.util.downloader.checkNewVersion
 import com.resukisu.resukisu.ui.util.module.LatestVersionInfo
 import com.resukisu.resukisu.ui.util.reboot
+import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -247,16 +247,15 @@ fun HomePage(
     val viewModel = viewModel<HomeViewModel>(
         viewModelStoreOwner = context.applicationContext as KernelSUApplication
     )
-    val coroutineScope = rememberCoroutineScope()
-
-    val pullRefreshState = rememberPullToRefreshState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            viewModel.refreshData(context, false)
-        }
+        viewModel.awaitInitialData(context)
     }
 
+    if (!uiState.isInitialDataLoaded) return
+
+    val pullRefreshState = rememberPullToRefreshState()
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     val scrollState = rememberScrollState()
@@ -267,7 +266,7 @@ fun HomePage(
     Scaffold(
         topBar = {
             TopBar(
-                viewModel = viewModel,
+                uiState = uiState,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -285,8 +284,8 @@ fun HomePage(
     ) { innerPadding ->
         PullToRefreshBox(
             state = pullRefreshState,
-            isRefreshing = viewModel.isRefreshing,
-            onRefresh = { viewModel.refreshData(context) },
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refreshData(context, refreshUI = true) },
             modifier = Modifier
                 .fillMaxSize()
                 .blurSource(),
@@ -296,7 +295,7 @@ fun HomePage(
                         .padding(top = innerPadding.calculateTopPadding())
                         .align(Alignment.TopCenter),
                     state = pullRefreshState,
-                    isRefreshing = viewModel.isRefreshing,
+                    isRefreshing = uiState.isRefreshing,
                 )
             },
         ) {
@@ -313,9 +312,10 @@ fun HomePage(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // 状态卡片
-                if (viewModel.isCoreDataLoaded) {
+                if (uiState.isCoreDataLoaded) {
                     StatusCard(
-                        systemStatus = viewModel.systemStatus,
+                        systemStatus = uiState.systemStatus,
+                        isHideVersion = uiState.isHideVersion,
                         onClickInstall = {
                             navigator.push(Route.Install(preselectedKernelUri = null))
                         },
@@ -338,7 +338,7 @@ fun HomePage(
                         }
                     )
 
-                    if (viewModel.systemStatus.requireNewKernel) {
+                    if (uiState.systemStatus.requireNewKernel) {
                         WarningCard(
                             message = stringResource(
                                 id = R.string.incompatible_kernel_msg,
@@ -371,7 +371,7 @@ fun HomePage(
                         )
                     }
 
-                    if (!viewModel.systemStatus.isOfficialSignature) {
+                    if (!uiState.systemStatus.isOfficialSignature) {
                         WarningCard(
                             message = stringResource(
                                 R.string.unofficial_version_notice,
@@ -404,7 +404,7 @@ fun HomePage(
                         )
                     }
 
-                    if (viewModel.systemStatus.kernelPatchImplement == Natives.KernelPatchImplement.KERNEL_PATCH_OFFICIAL) {
+                    if (uiState.systemStatus.kernelPatchImplement == Natives.KernelPatchImplement.KERNEL_PATCH_OFFICIAL) {
                         WarningCard(
                             message = stringResource(
                                 R.string.conflict_with_apatch,
@@ -420,7 +420,7 @@ fun HomePage(
                         )
                     }
 
-                    if (viewModel.systemStatus.ksuVersion != null && !viewModel.systemStatus.isRootAvailable) {
+                    if (uiState.systemStatus.ksuVersion != null && !uiState.systemStatus.isRootAvailable) {
                         WarningCard(
                             message = stringResource(id = R.string.grant_root_failed),
                             icon = {
@@ -435,28 +435,20 @@ fun HomePage(
                     }
                 }
 
-                val checkUpdate = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                    .getBoolean("check_update", true)
-                if (checkUpdate) {
-                    UpdateCard()
-                }
+                UpdateCard(uiState.latestVersionInfo)
 
-                AnimatedVisibility(
-                    visible = viewModel.isExtendedDataLoaded
-                ) {
+                if (uiState.isExtendedDataLoaded) {
                     InfoCard(
-                        systemInfo = viewModel.systemInfo,
-                        isSimpleMode = viewModel.isSimpleMode,
-                        isHideSusfsStatus = viewModel.isHideSusfsStatus,
-                        isHideZygiskImplement = viewModel.isHideZygiskImplement,
-                        isHideMetaModuleImplement = viewModel.isHideMetaModuleImplement,
-                        showKpmInfo = viewModel.showKpmInfo,
-                        lkmMode = viewModel.systemStatus.lkmMode,
+                        systemInfo = uiState.systemInfo,
+                        isSimpleMode = uiState.isSimpleMode,
+                        isHideSusfsStatus = uiState.isHideSusfsStatus,
+                        isHideZygiskImplement = uiState.isHideZygiskImplement,
+                        isHideMetaModuleImplement = uiState.isHideMetaModuleImplement,
                     )
                 }
 
                 // 链接卡片
-                if (!viewModel.isSimpleMode && !viewModel.isHideLinkCard) {
+                if (!uiState.isSimpleMode && !uiState.isHideLinkCard) {
                     DonateCard()
                     LearnMoreCard()
                 }
@@ -468,15 +460,8 @@ fun HomePage(
 }
 
 @Composable
-fun UpdateCard() {
+fun UpdateCard(newVersion: LatestVersionInfo) {
     val context = LocalContext.current
-    val latestVersionInfo = LatestVersionInfo()
-    val newVersion by produceState(initialValue = latestVersionInfo) {
-        value = withContext(Dispatchers.IO) {
-            checkNewVersion()
-        }
-    }
-
     val currentVersionCode = getManagerVersion(context).second
     val newVersionCode = newVersion.versionCode
     val newVersionUrl = newVersion.downloadUrl
@@ -486,16 +471,7 @@ fun UpdateCard() {
     val title = stringResource(id = R.string.module_changelog)
     val updateText = stringResource(id = R.string.module_update)
 
-    AnimatedVisibility(
-        visible = newVersionCode > currentVersionCode,
-        enter = fadeIn() + expandVertically(
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        ),
-        exit = shrinkVertically() + fadeOut()
-    ) {
+    if (newVersionCode > currentVersionCode) {
         val updateDialog = rememberConfirmDialog(onConfirm = { uriHandler.openUri(newVersionUrl) })
         WarningCard(
             message = stringResource(id = R.string.new_version_available).format(newVersionCode),
@@ -526,7 +502,7 @@ fun UpdateCard() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
-    viewModel: HomeViewModel,
+    uiState: HomeUiState,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val navigator = LocalNavigator.current
@@ -576,9 +552,9 @@ private fun TopBar(
                     MaterialTheme.colorScheme.surfaceContainer.copy(CardConfig.cardAlpha),
         ),
         actions = {
-            if (viewModel.isCoreDataLoaded) {
+            if (uiState.isCoreDataLoaded) {
                 // SuSFS 配置按钮
-                if (viewModel.systemInfo.susfsVersionSupported) {
+                if (uiState.systemInfo.susfsVersionSupported) {
                     IconButton(onClick = {
                         navigator.push(Route.SuSFSConfig)
                     }) {
@@ -617,14 +593,21 @@ private fun TopBar(
 @Composable
 private fun StatusCard(
     systemStatus: HomeViewModel.SystemStatus,
+    isHideVersion: Boolean = false,
     onClickInstall: () -> Unit = {},
     onClickJailbreak: () -> Unit = {}
 ) {
+    val containerColor =
+        if (systemStatus.ksuVersion != null)
+            MaterialTheme.colorScheme.secondaryContainer
+        else
+            MaterialTheme.colorScheme.errorContainer
+
     ElevatedCard(
-        colors = getCardColors(
-            if (systemStatus.ksuVersion != null) MaterialTheme.colorScheme.secondaryContainer
-            else MaterialTheme.colorScheme.errorContainer
-        ),
+        modifier = Modifier
+            .clip(CardDefaults.elevatedShape)
+            .renderBackgroundBlur(containerColor),
+        colors = getCardColors(containerColor),
         elevation = getCardElevation(),
     ) {
         Row(
@@ -698,12 +681,6 @@ private fun StatusCard(
                                 )
                             }
                         }
-
-                        val isHideVersion = LocalContext.current.getSharedPreferences(
-                            "settings",
-                            Context.MODE_PRIVATE
-                        )
-                            .getBoolean("is_hide_version", false)
 
                         if (!isHideVersion) {
                             Spacer(Modifier.height(4.dp))
@@ -798,6 +775,9 @@ fun LearnMoreCard() {
     val url = stringResource(R.string.home_learn_kernelsu_url)
 
     ElevatedCard(
+        modifier = Modifier
+            .clip(CardDefaults.elevatedShape)
+            .renderBackgroundBlur(),
         colors = getCardColors(MaterialTheme.colorScheme.surfaceContainerHighest),
         elevation = CardDefaults.cardElevation(defaultElevation = cardElevation)
     ) {
@@ -831,6 +811,9 @@ fun DonateCard() {
     val uriHandler = LocalUriHandler.current
 
     ElevatedCard(
+        modifier = Modifier
+            .clip(CardDefaults.elevatedShape)
+            .renderBackgroundBlur(),
         colors = getCardColors(MaterialTheme.colorScheme.surfaceContainerHighest),
         elevation = getCardElevation(),
     ) {
@@ -865,11 +848,12 @@ private fun InfoCard(
     isSimpleMode: Boolean,
     isHideSusfsStatus: Boolean,
     isHideZygiskImplement: Boolean,
-    isHideMetaModuleImplement: Boolean,
-    showKpmInfo: Boolean,
-    lkmMode: Boolean?
+    isHideMetaModuleImplement: Boolean
 ) {
     ElevatedCard(
+        modifier = Modifier
+            .clip(CardDefaults.elevatedShape)
+            .renderBackgroundBlur(),
         colors = getCardColors(MaterialTheme.colorScheme.surfaceContainerHighest),
         elevation = getCardElevation(),
     ) {
