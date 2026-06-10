@@ -112,6 +112,7 @@ import com.resukisu.resukisu.ui.susfs.SuSFSConfigScreen
 import com.resukisu.resukisu.ui.theme.KernelSUTheme
 import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.backgroundImagePainter
+import com.resukisu.resukisu.ui.theme.blurBackgroundImageBitmap
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalBackgroundBlurAnchor
 import com.resukisu.resukisu.ui.util.LocalBlurState
@@ -176,6 +177,11 @@ class MainActivity : ComponentActivity() {
                 ViewModelProvider(applicationContext as KernelSUApplication)[HomeViewModel::class.java]
             splashScreen.setKeepOnScreenCondition {
                 !homeViewModel.uiState.value.isInitialDataLoaded
+                        || (
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                                ThemeConfig.isEnableBlurExp &&
+                                blurBackgroundImageBitmap != null
+                        )
             }
 
             val isManager = Natives.isManager
@@ -649,7 +655,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeViewModels() {
-        superUserViewModel = SuperUserViewModel()
+        superUserViewModel =
+            ViewModelProvider(applicationContext as KernelSUApplication)[SuperUserViewModel::class.java]
         homeViewModel =
             ViewModelProvider(applicationContext as KernelSUApplication)[HomeViewModel::class.java]
         settingsViewModel =

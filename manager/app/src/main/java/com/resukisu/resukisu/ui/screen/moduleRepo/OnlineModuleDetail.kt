@@ -275,18 +275,20 @@ fun InfoTab(
             }
         }
 
-        item {
-            SegmentedColumn(
-                title = stringResource(R.string.source_code)
-            ) {
-                item {
-                    SettingsBaseWidget(
-                        icon = Icons.Default.Code,
-                        title = module.sourceUrl,
-                        onClick = {
-                            uriHandler.openUri(module.sourceUrl)
-                        }
-                    ) {}
+        if (module.sourceUrl.isNotEmpty() && module.sourceUrl != "null") {
+            item {
+                SegmentedColumn(
+                    title = stringResource(R.string.source_code)
+                ) {
+                    item {
+                        SettingsBaseWidget(
+                            icon = Icons.Default.Code,
+                            title = module.sourceUrl,
+                            onClick = {
+                                uriHandler.openUri(module.sourceUrl)
+                            }
+                        ) {}
+                    }
                 }
             }
         }

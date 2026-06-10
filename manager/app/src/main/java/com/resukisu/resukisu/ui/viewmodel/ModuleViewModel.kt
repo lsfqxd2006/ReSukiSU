@@ -1,10 +1,12 @@
 package com.resukisu.resukisu.ui.viewmodel
 
+import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.resukisu.resukisu.data.appPreferences
 import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.util.HanziToPinyin
 import com.resukisu.resukisu.ui.util.getRootShell
@@ -32,6 +34,8 @@ data class ModuleUiState(
     val sortActionFirst: Boolean = false,
     val hasModuleRequireMount: Boolean = false,
     val isNeedRefresh: Boolean = false,
+    val showMoreModuleInfo: Boolean = false,
+    val isHideTagRow: Boolean = false
 )
 
 class ModuleViewModel : ViewModel() {
@@ -64,6 +68,30 @@ class ModuleViewModel : ViewModel() {
         )
         _uiState.update { state ->
             state.copy(moduleSizes = state.moduleSizes + (dirId to size))
+        }
+    }
+
+    private fun updateBooleanPref(
+        context: Context,
+        key: String,
+        value: Boolean,
+        reducer: (ModuleUiState) -> ModuleUiState,
+    ) {
+        context.appPreferences.putBoolean(key, value)
+        _uiState.update(reducer)
+    }
+
+    fun handleHideTagRowChange(context: Context, newValue: Boolean) {
+        updateBooleanPref(context, "is_hide_tag_row", newValue) { it.copy(isHideTagRow = newValue) }
+    }
+
+    fun handleHideTagRowChange(newValue: Boolean) {
+        handleHideTagRowChange(ksuApp, newValue)
+    }
+
+    fun handleShowMoreModuleInfoChange(context: Context, newValue: Boolean) {
+        updateBooleanPref(context, "show_more_module_info", newValue) {
+            it.copy(showMoreModuleInfo = newValue)
         }
     }
 

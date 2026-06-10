@@ -108,10 +108,10 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.resukisu.resukisu.BuildConfig
-import com.resukisu.resukisu.KernelSUApplication
 import com.resukisu.resukisu.KernelVersion
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.magica.MagicaService
 import com.resukisu.resukisu.ui.component.KsuIsValid
 import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
@@ -245,7 +245,7 @@ fun HomePage(
 ) {
     val context = LocalContext.current
     val viewModel = viewModel<HomeViewModel>(
-        viewModelStoreOwner = context.applicationContext as KernelSUApplication
+        viewModelStoreOwner = ksuApp
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

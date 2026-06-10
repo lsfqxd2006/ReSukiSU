@@ -65,7 +65,6 @@ enum class PredictiveBackExitDirection(val value: String) {
 }
 
 data class SettingsUiState(
-    val isHideOtherInfo: Boolean = false,
     val dpi: Int = 0,
     val predictiveBackAnimation: PredictiveBackAnimation = PredictiveBackAnimation.Scale,
     val predictiveBackExitDirection: PredictiveBackExitDirection = PredictiveBackExitDirection.FOLLOW_GESTURE,
@@ -77,14 +76,6 @@ data class SettingsUiState(
     val currentAppLocale: Locale? = null,
     val showThemeColorDialog: Boolean = false,
 
-    val isSimpleMode: Boolean = false,
-    val isHideVersion: Boolean = false,
-    val isHideZygiskImplement: Boolean = false,
-    val isHideMetaModuleImplement: Boolean = false,
-    val isHideSusfsStatus: Boolean = false,
-    val isHideLinkCard: Boolean = false,
-    val isHideTagRow: Boolean = false,
-    val showMoreModuleInfo: Boolean = false,
     val useAltIcon: Boolean = false,
 
     val cardAlpha: Float = 1f,
@@ -125,7 +116,6 @@ class SettingsViewModel : ViewModel() {
 
         _uiState.update {
             it.copy(
-                isHideOtherInfo = prefs.getBoolean("is_hide_other_info", false),
                 dpi = prefs.getInt("app_dpi", 0),
                 predictiveBackAnimation = PredictiveBackAnimation.fromValueOrDefault(
                     prefs.getString("predictive_back_animation", "") ?: ""
@@ -145,17 +135,6 @@ class SettingsViewModel : ViewModel() {
                 ),
                 useDynamicColor = ThemeConfig.useDynamicColor,
                 currentAppLocale = getCurrentAppLocale(context),
-                isSimpleMode = prefs.getBoolean("is_simple_mode", false),
-                isHideVersion = prefs.getBoolean("is_hide_version", false),
-                isHideZygiskImplement = prefs.getBoolean("is_hide_zygisk_Implement", false),
-                isHideMetaModuleImplement = prefs.getBoolean(
-                    "is_hide_meta_module_Implement",
-                    false
-                ),
-                isHideSusfsStatus = prefs.getBoolean("is_hide_susfs_status", false),
-                isHideLinkCard = prefs.getBoolean("is_hide_link_card", false),
-                isHideTagRow = prefs.getBoolean("is_hide_tag_row", false),
-                showMoreModuleInfo = prefs.getBoolean("show_more_module_info", false),
                 useAltIcon = prefs.getBoolean("use_alt_icon", false),
                 cardAlpha = CardConfig.cardAlpha,
                 backgroundDim = ThemeConfig.backgroundDim,
@@ -444,90 +423,6 @@ class SettingsViewModel : ViewModel() {
         _uiState.update { it.copy(useAltIcon = newValue) }
         Toast.makeText(context, context.getString(R.string.icon_switched), Toast.LENGTH_SHORT)
             .show()
-    }
-
-    fun handleSimpleModeChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "is_simple_mode", newValue) { it.copy(isSimpleMode = newValue) }
-    }
-
-    fun handleHideVersionChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(
-            context,
-            "is_hide_version",
-            newValue
-        ) { it.copy(isHideVersion = newValue) }
-    }
-
-    fun handleHideVersionChange(newValue: Boolean) {
-        handleHideVersionChange(ksuApp, newValue)
-    }
-
-    fun handleHideOtherInfoChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "is_hide_other_info", newValue) {
-            it.copy(isHideOtherInfo = newValue)
-        }
-    }
-
-    fun handleHideOtherInfoChange(newValue: Boolean) {
-        handleHideOtherInfoChange(ksuApp, newValue)
-    }
-
-    fun handleHideSusfsStatusChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(
-            context,
-            "is_hide_susfs_status",
-            newValue
-        ) { it.copy(isHideSusfsStatus = newValue) }
-    }
-
-    fun handleHideSusfsStatusChange(newValue: Boolean) {
-        handleHideSusfsStatusChange(ksuApp, newValue)
-    }
-
-    fun handleHideZygiskImplementChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "is_hide_zygisk_Implement", newValue) {
-            it.copy(isHideZygiskImplement = newValue)
-        }
-    }
-
-    fun handleHideZygiskImplementChange(newValue: Boolean) {
-        handleHideZygiskImplementChange(ksuApp, newValue)
-    }
-
-    fun handleHideMetaModuleImplementChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "is_hide_meta_module_Implement", newValue) {
-            it.copy(isHideMetaModuleImplement = newValue)
-        }
-    }
-
-    fun handleHideMetaModuleImplementChange(newValue: Boolean) {
-        handleHideMetaModuleImplementChange(ksuApp, newValue)
-    }
-
-    fun handleHideLinkCardChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(
-            context,
-            "is_hide_link_card",
-            newValue
-        ) { it.copy(isHideLinkCard = newValue) }
-    }
-
-    fun handleHideLinkCardChange(newValue: Boolean) {
-        handleHideLinkCardChange(ksuApp, newValue)
-    }
-
-    fun handleHideTagRowChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "is_hide_tag_row", newValue) { it.copy(isHideTagRow = newValue) }
-    }
-
-    fun handleHideTagRowChange(newValue: Boolean) {
-        handleHideTagRowChange(ksuApp, newValue)
-    }
-
-    fun handleShowMoreModuleInfoChange(context: Context, newValue: Boolean) {
-        updateBooleanPref(context, "show_more_module_info", newValue) {
-            it.copy(showMoreModuleInfo = newValue)
-        }
     }
 
     fun handleCheckUpdateChange(context: Context, enabled: Boolean) {

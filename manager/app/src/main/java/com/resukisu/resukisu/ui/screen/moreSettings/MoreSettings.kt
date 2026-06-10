@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -87,7 +86,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.resukisu.resukisu.R
-import com.resukisu.resukisu.ui.MainActivity
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberCustomDialog
@@ -110,6 +109,10 @@ import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.renderBackgroundBlur
+import com.resukisu.resukisu.ui.viewmodel.HomeUiState
+import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
+import com.resukisu.resukisu.ui.viewmodel.ModuleUiState
+import com.resukisu.resukisu.ui.viewmodel.ModuleViewModel
 import com.resukisu.resukisu.ui.viewmodel.PredictiveBackAnimation
 import com.resukisu.resukisu.ui.viewmodel.PredictiveBackExitDirection
 import com.resukisu.resukisu.ui.viewmodel.SettingsUiState
@@ -136,9 +139,14 @@ fun MoreSettingsScreen() {
     val systemIsDark = isSystemInDarkTheme()
 
     // 创建设置状态管理器
-    val activity = LocalActivity.current as MainActivity
-    val settingsViewModel = viewModel<SettingsViewModel>(viewModelStoreOwner = activity)
+    val settingsViewModel = viewModel<SettingsViewModel>(viewModelStoreOwner = ksuApp)
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+
+    val homeViewModel = viewModel<HomeViewModel>(viewModelStoreOwner = ksuApp)
+    val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+
+    val moduleViewModel = viewModel<ModuleViewModel>(viewModelStoreOwner = ksuApp)
+    val moduleUiState by moduleViewModel.uiState.collectAsStateWithLifecycle()    
 
     // TODO Add In app crop as fallback
     // 图片选择器
@@ -334,8 +342,12 @@ fun MoreSettingsScreen() {
             item {
                 // 自定义设置
                 CustomizationSettings(
-                    state = settingsState,
-                    viewModel = settingsViewModel
+                    homeUiState = homeUiState,
+                    homeViewModel = homeViewModel,
+                    moduleUiState = moduleUiState,
+                    moduleViewModel = moduleViewModel,
+                    settingsUiState = settingsState,
+                    settingsViewModel = settingsViewModel
                 )
             }
 
@@ -572,15 +584,17 @@ private fun AppearanceSettings(
                 backgroundAdjustmentControls(state, viewModel, coroutineScope)
             }
         )
-
-        // TODO Add HazeConfig and unify hazeState management
     }
 }
 
 @Composable
 private fun CustomizationSettings(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel
+    homeUiState: HomeUiState,
+    moduleUiState: ModuleUiState,
+    settingsUiState: SettingsUiState,
+    settingsViewModel: SettingsViewModel,
+    homeViewModel: HomeViewModel,
+    moduleViewModel: ModuleViewModel,
 ) {
     val context = LocalContext.current
     SegmentedColumn(title = stringResource(R.string.custom_settings)) {
@@ -590,8 +604,8 @@ private fun CustomizationSettings(
                 icon = Icons.Filled.Info,
                 title = stringResource(R.string.show_more_module_info),
                 description = stringResource(R.string.show_more_module_info_summary),
-                checked = state.showMoreModuleInfo,
-                onCheckedChange = { viewModel.handleShowMoreModuleInfoChange(context, it) }
+                checked = moduleUiState.showMoreModuleInfo,
+                onCheckedChange = { moduleViewModel.handleShowMoreModuleInfoChange(context, it) }
             )
         }
 
@@ -601,18 +615,20 @@ private fun CustomizationSettings(
                 icon = Icons.Filled.Brush,
                 title = stringResource(R.string.simple_mode),
                 description = stringResource(R.string.simple_mode_summary),
-                checked = state.isSimpleMode,
-                onCheckedChange = { viewModel.handleSimpleModeChange(context, it) }
+                checked = homeUiState.isSimpleMode,
+                onCheckedChange = { homeViewModel.handleSimpleModeChange(context, it) }
             )
         }
 
-        hideOptionsSettings(state = state, viewModel = viewModel)
+        hideOptionsSettings(homeUiState, moduleUiState, homeViewModel, moduleViewModel)
     }
 }
 
 private fun SegmentedColumnScope.hideOptionsSettings(
-    state: SettingsUiState,
-    viewModel: SettingsViewModel
+    homeUiState: HomeUiState,
+    moduleUiState: ModuleUiState,
+    homeViewModel: HomeViewModel,
+    moduleViewModel: ModuleViewModel,
 ) {
     item {
         // 隐藏内核版本号
@@ -620,8 +636,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_kernel_kernelsu_version),
             description = stringResource(R.string.hide_kernel_kernelsu_version_summary),
-            checked = state.isHideVersion,
-            onCheckedChange = viewModel::handleHideVersionChange
+            checked = homeUiState.isHideVersion,
+            onCheckedChange = homeViewModel::handleHideVersionChange
         )
     }
 
@@ -631,8 +647,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_other_info),
             description = stringResource(R.string.hide_other_info_summary),
-            checked = state.isHideOtherInfo,
-            onCheckedChange = viewModel::handleHideOtherInfoChange
+            checked = homeUiState.isHideOtherInfo,
+            onCheckedChange = homeViewModel::handleHideOtherInfoChange
         )
     }
 
@@ -642,8 +658,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_susfs_status),
             description = stringResource(R.string.hide_susfs_status_summary),
-            checked = state.isHideSusfsStatus,
-            onCheckedChange = viewModel::handleHideSusfsStatusChange
+            checked = homeUiState.isHideSusfsStatus,
+            onCheckedChange = homeViewModel::handleHideSusfsStatusChange
         )
     }
 
@@ -653,8 +669,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_zygisk_implement),
             description = stringResource(R.string.hide_zygisk_implement_summary),
-            checked = state.isHideZygiskImplement,
-            onCheckedChange = viewModel::handleHideZygiskImplementChange
+            checked = homeUiState.isHideZygiskImplement,
+            onCheckedChange = homeViewModel::handleHideZygiskImplementChange
         )
     }
 
@@ -664,8 +680,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_meta_module_implement),
             description = stringResource(R.string.hide_meta_module_implement_summary),
-            checked = state.isHideMetaModuleImplement,
-            onCheckedChange = viewModel::handleHideMetaModuleImplementChange
+            checked = homeUiState.isHideMetaModuleImplement,
+            onCheckedChange = homeViewModel::handleHideMetaModuleImplementChange
         )
     }
 
@@ -675,8 +691,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_link_card),
             description = stringResource(R.string.hide_link_card_summary),
-            checked = state.isHideLinkCard,
-            onCheckedChange = viewModel::handleHideLinkCardChange
+            checked = homeUiState.isHideLinkCard,
+            onCheckedChange = homeViewModel::handleHideLinkCardChange
         )
     }
 
@@ -686,8 +702,8 @@ private fun SegmentedColumnScope.hideOptionsSettings(
             icon = Icons.Filled.VisibilityOff,
             title = stringResource(R.string.hide_tag_card),
             description = stringResource(R.string.hide_tag_card_summary),
-            checked = state.isHideTagRow,
-            onCheckedChange = viewModel::handleHideTagRowChange
+            checked = moduleUiState.isHideTagRow,
+            onCheckedChange = moduleViewModel::handleHideTagRowChange
         )
     }
 }
