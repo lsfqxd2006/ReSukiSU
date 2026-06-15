@@ -180,7 +180,7 @@ class MainActivity : ComponentActivity() {
                         || (
                         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                                 ThemeConfig.isEnableBlurExp &&
-                                blurBackgroundImageBitmap == null
+                                blurBackgroundImageBitmap != null
                         )
             }
 
