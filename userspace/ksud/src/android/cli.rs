@@ -493,7 +493,10 @@ enum Kernel {
 #[derive(clap::Subcommand, Debug)]
 enum DynamicManagerOp {
     /// Get the signature of the current dynamic manager (size+hash)
-    Get,
+    Get {
+        #[arg(long)]
+        internal: Option<bool>,
+    },
     /// Set the signature of the dynamic manager
     Set {
         /// the signature size
@@ -865,9 +868,18 @@ pub fn run() -> Result<()> {
             },
             Kernel::DynamicManager { command } => match command {
                 DynamicManagerOp::Set { size, hash } => dynamic_manager::set(size, hash),
-                DynamicManagerOp::Get => {
+                DynamicManagerOp::Get { internal } => {
                     let (size, hash) = ksucalls::dynamic_manager_get()?;
-                    println!("size: {}, hash: {}", size, String::from_utf8_lossy(&hash));
+                    if internal.is_some_and(|s| s) {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(
+                                &serde_json::json!({"size":size,"hash":String::from_utf8_lossy(&hash)})
+                            )?
+                        );
+                    } else {
+                        println!("size: {}, hash: {}", size, String::from_utf8_lossy(&hash));
+                    }
                     Ok(())
                 }
                 DynamicManagerOp::SetApk { apk } => {
