@@ -333,9 +333,7 @@
     <string name="appearance_settings">自訂工具欄</string>
     <string name="predictive_back_settings">預測性返回</string>
     <string name="predictive_back_animation">預測性返回動畫</string>
-    <string name="predictive_back_animation_desc">選取預測性返回動畫效果</string>
     <string name="predictive_back_exit_direction">退出方向</string>
-    <string name="predictive_back_exit_direction_desc">選取預測性返回之離開方向</string>
     <string name="predictive_back_animation_none">無</string>
     <string name="predictive_back_animation_aosp">原生 (AOSP)</string>
     <string name="predictive_back_animation_scale">縮放</string>

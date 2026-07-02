@@ -78,7 +78,7 @@ import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.component.SearchAppBar
 import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
-import com.resukisu.resukisu.ui.component.settings.SettingsDropdownWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsChooseWidget
 import com.resukisu.resukisu.ui.component.settings.lazySegmentColumn
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.theme.CardConfig
@@ -278,7 +278,7 @@ private fun SulogScreenContent(
                                         )
                                     )
                             ) {
-                                SettingsDropdownWidget(
+                                SettingsChooseWidget(
                                     iconPlaceholder = false,
                                     title = stringResource(R.string.sulog_log_files),
                                     items = fileSelector.items,

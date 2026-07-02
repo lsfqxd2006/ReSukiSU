@@ -332,9 +332,7 @@
     <string name="appearance_settings">Налаштувати панель інструментів</string>
     <string name="predictive_back_settings">Передбачуване повернення</string>
     <string name="predictive_back_animation">Анімація передбачуваного повернення</string>
-    <string name="predictive_back_animation_desc">Вибрати ефект анімації для передбачуваного повернення</string>
     <string name="predictive_back_exit_direction">Напрямок виходу</string>
-    <string name="predictive_back_exit_direction_desc">Вибрати напрямок виходу для передбачуваного повернення</string>
     <string name="predictive_back_animation_none">Немає</string>
     <string name="predictive_back_animation_aosp">AOSP</string>
     <string name="predictive_back_animation_scale">Масштабування</string>
