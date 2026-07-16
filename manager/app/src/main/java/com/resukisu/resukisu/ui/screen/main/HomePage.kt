@@ -9,7 +9,7 @@ import android.system.Os
 import android.widget.Toast
 import androidx.annotation.StringRes
 
-// Compose UI 核心（dp、Density、Modifier、ImageVector 关键修复）
+// Compose UI 核心
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Modifier.background
 import androidx.compose.ui.graphics.ImageVector
@@ -110,7 +110,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// 项目内部业务（修复 LocalNavigator 找不到）
+// 自定义组件（修复 SettingsBaseWidget / SegmentedColumn / item 找不到）
+import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
+import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
+import com.resukisu.resukisu.ui.component.settings.item
+
+// 项目内部业务
 import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
@@ -124,8 +129,6 @@ import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberLoadingDialog
-import com.resukisu.ui.component.settings.SegmentedColumn
-import com.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
