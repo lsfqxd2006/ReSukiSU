@@ -1,5 +1,7 @@
 package com.resukisu.resukisu.ui.screen.main
 
+import androidx.compose.ui.graphics.ImageVector
+import androidx.compose.ui.Modifier.background
 import android.content.Context
 import android.content.Intent
 import android.os.Build
