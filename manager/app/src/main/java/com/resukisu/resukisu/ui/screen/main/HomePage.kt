@@ -1,23 +1,35 @@
 package com.resukisu.resukisu.ui.screen.main
 
-import androidx.compose.ui.graphics.ImageVector
-import androidx.compose.ui.Modifier.background
+// Android基础框架
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import android.system.Os
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.annotation.StringRes
+
+// Compose UI 核心基础（修复ImageVector、background、Density报错关键）
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Modifier.background
+import androidx.compose.ui.graphics.ImageVector
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.Alignment
+
+// Compose 布局容器
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -34,14 +46,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.Block
-import androidx.compose.material.icons.twotone.Error
-import androidx.compose.material.icons.twotone.Info
-import androidx.compose.material.icons.twotone.PowerSettingsNew
-import androidx.compose.material.icons.twotone.TaskAlt
-import androidx.compose.material.icons.twotone.Tune
-import androidx.compose.material.icons.twotone.Warning
+
+// Compose 动画
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+
+// Material3 控件（修复BasicAlertDialog）
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuGroup
@@ -62,6 +77,25 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
+
+// 全套图标（修复Refresh/RotateRight等图标找不到）
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.automirrored.outlined.RotateRight
+import androidx.compose.material.icons.outlined.RotateRight
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DeveloperMode
+import androidx.compose.material.icons.twotone.Block
+import androidx.compose.material.icons.twotone.Error
+import androidx.compose.material.icons.twotone.Info
+import androidx.compose.material.icons.twotone.PowerSettingsNew
+import androidx.compose.material.icons.twotone.TaskAlt
+import androidx.compose.material.icons.twotone.Tune
+import androidx.compose.material.icons.twotone.Warning
+
+// Compose 运行时
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -69,20 +103,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.var
+
+// ViewModel & 生命周期
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+// 项目内部业务类
 import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
@@ -98,7 +125,7 @@ import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberLoadingDialog
 import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
-import com.resukisu.resukisu.ui.navigation.LocalNavigator
+import com.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
 import com.resukisu.resukisu.ui.theme.CardConfig
@@ -111,23 +138,12 @@ import com.resukisu.resukisu.ui.util.downloader.downloadManagerUpdate
 import com.resukisu.resukisu.ui.util.reboot
 import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
+
+// 协程
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.annotation.StringRes
-import androidx.compose.ui.graphics.ImageVector
-import androidx.compose.ui.unit.Density
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.Modifier.background
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.automirrored.outlined.RotateRight
-import androidx.compose.material.icons.outlined.RotateRight
-import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.DeveloperMode
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
