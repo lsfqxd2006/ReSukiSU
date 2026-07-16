@@ -9,7 +9,7 @@ import android.system.Os
 import android.widget.Toast
 import androidx.annotation.StringRes
 
-// Compose UI 核心
+// Compose UI 核心（修复 background / ImageVector）
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Modifier.background
 import androidx.compose.ui.graphics.ImageVector
@@ -104,13 +104,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.var
 
 // ViewModel / 生命周期
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// 自定义组件（修复 SettingsBaseWidget / SegmentedColumn / item 找不到）
+// 【关键修复item、SegmentedColumn、SettingsBaseWidget】
 import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.component.settings.item
@@ -123,12 +123,12 @@ import com.resukisu.resukisu.data.update.ManagerUpdateChannel
 import com.resukisu.resukisu.data.update.ManagerUpdateInfo
 import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.magica.MagicaService
-import com.resukisu.resukisu.ui.component.KsuIsValid
-import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
-import com.resukisu.resukisu.ui.component.WarningCard
-import com.resukisu.resukisu.ui.component.ksuIsValid
-import com.resukisu.resukisu.ui.component.rememberConfirmDialog
-import com.resukisu.resukisu.ui.component.rememberLoadingDialog
+import com.resukisu.ui.component.KsuIsValid
+import com.resukisu.ui.component.SwipeableSnackbarHost
+import com.resukisu.ui.component.WarningCard
+import com.resukisu.ui.component.ksuIsValid
+import com.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.ui.component.rememberLoadingDialog
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
