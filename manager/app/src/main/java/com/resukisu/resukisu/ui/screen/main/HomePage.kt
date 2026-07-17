@@ -9,12 +9,11 @@ import android.system.Os
 import android.widget.Toast
 import androidx.annotation.StringRes
 
-// Compose UI 核心（修复 background / ImageVector）
+// Compose UI 核心
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Modifier.background
-import androidx.compose.ui.graphics.ImageVector
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Density
@@ -104,6 +103,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.var
 
 // ViewModel / 生命周期
@@ -123,12 +123,12 @@ import com.resukisu.resukisu.data.update.ManagerUpdateChannel
 import com.resukisu.resukisu.data.update.ManagerUpdateInfo
 import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.magica.MagicaService
-import com.resukisu.ui.component.KsuIsValid
-import com.resukisu.ui.component.SwipeableSnackbarHost
-import com.resukisu.ui.component.WarningCard
-import com.resukisu.ui.component.ksuIsValid
-import com.resukisu.ui.component.rememberConfirmDialog
-import com.resukisu.ui.component.rememberLoadingDialog
+import com.resukisu.resukisu.ui.component.KsuIsValid
+import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
+import com.resukisu.resukisu.ui.component.WarningCard
+import com.resukisu.resukisu.ui.component.ksuIsValid
+import com.resukisu.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.resukisu.ui.component.rememberLoadingDialog
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
@@ -148,6 +148,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
