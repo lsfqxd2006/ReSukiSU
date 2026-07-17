@@ -243,6 +243,4 @@ dependencies {
     implementation(libs.accompanist.drawablepainter)
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-util")
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
-    runtimeOnly("com.sun.xml.bind:jaxb-impl:4.0.2")
 }
