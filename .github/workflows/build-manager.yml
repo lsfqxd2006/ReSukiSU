@@ -187,14 +187,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-     
-      - name: Override Gradle Wrapper to 8.10
-        run: |
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.10-bin.zip" > gradle/wrapper/gradle-wrapper.properties
-     
+          
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
-
+        env:
+          DEVELOCITY_INJECTION_ENABLED: "false"
+          
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
