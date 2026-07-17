@@ -186,7 +186,7 @@ jobs:
         uses: actions/setup-java@v5
         env:
           DEVELOCITY_INJECTION_ENABLED: "false"
-          GRADLE_OPTS: "-Ddevelocity.injection.enabled=false --add-opens=java.xml.bind/javax.xml.bind.annotation=ALL-UNNAMED"
+          GRADLE_INIT_SCRIPTS: ""
         with:
           distribution: temurin
           java-version: 17
@@ -196,16 +196,16 @@ jobs:
 
       - name: Clear Gradle & Build Cache
         run: |
-          ./gradlew clean --no-configuration-cache --no-build-scan
+          ./gradlew clean --no-configuration-cache
           rm -rf ~/.gradle/caches ~/.gradle/wrapper
           rm -rf app/build app/.cxx
 
       - name: Build APK
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache --no-build-scan
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache
           else
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} --no-configuration-cache --no-build-scan
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} --no-configuration-cache
           fi
 
       - name: Upload artifact
