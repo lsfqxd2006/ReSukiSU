@@ -1,36 +1,20 @@
 package com.resukisu.resukisu.ui.screen.main
 
-// Android 基础
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import android.system.Os
 import android.widget.Toast
-import androidx.annotation.StringRes
-
-// Compose UI 核心
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.background
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageVector
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.Alignment
-
-// Compose 布局
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -44,47 +28,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-
-// 动画
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-
-// Material3
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberTopAppBarState
-
-// 全部图标
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.automirrored.outlined.RotateRight
-import androidx.compose.material.icons.outlined.RotateRight
-import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.twotone.Block
 import androidx.compose.material.icons.twotone.Error
 import androidx.compose.material.icons.twotone.Info
@@ -92,26 +37,45 @@ import androidx.compose.material.icons.twotone.PowerSettingsNew
 import androidx.compose.material.icons.twotone.TaskAlt
 import androidx.compose.material.icons.twotone.Tune
 import androidx.compose.material.icons.twotone.Warning
-
-// Compose 运行时
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuGroup
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-// 注意：不要导入 androidx.compose.runtime.var（该关键字不可导入）
-
-// ViewModel / 生命周期
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-// 项目内部业务
-import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
-import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
-// 注意：item 是 SegmentedColumn 作用域内的函数，无需显式导入
 import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
@@ -125,6 +89,8 @@ import com.resukisu.resukisu.ui.component.WarningCard
 import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberLoadingDialog
+import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
+import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
@@ -138,13 +104,29 @@ import com.resukisu.resukisu.ui.util.downloader.downloadManagerUpdate
 import com.resukisu.resukisu.ui.util.reboot
 import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
-
-// 协程
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.outlined.RotateRight
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.DeveloperMode
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
@@ -238,8 +220,6 @@ private fun RebootDialog(
         }
     }
 }
-
-// ==================== 主界面 ====================
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -352,6 +332,7 @@ fun HomePage(
                         }
                     }
 
+                    // 警告信息
                     if (BuildConfig.DEBUG) {
                         WarningCard(
                             message = stringResource(R.string.debug_version_notice),
@@ -437,6 +418,8 @@ fun HomePage(
                         onClickJailbreak = {
                             loadingDialog.showLoading()
                             context.startService(Intent(context, MagicaService::class.java))
+                            // Manager will be force-stopped and restarted by late-load on success.
+                            // If that doesn't happen within timeout, jailbreak likely failed.
                             scope.launch(Dispatchers.IO) {
                                 delay(30_000)
                                 withContext(Dispatchers.Main) {
@@ -478,6 +461,7 @@ fun HomePage(
                     )
                 }
 
+                // 链接卡片
                 if (!uiState.isSimpleMode && !uiState.isHideLinkCard) {
                     DonateCard()
                     LearnMoreCard()
@@ -575,6 +559,7 @@ private fun TopBar(
     var showRebootDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    // 动态构建重启选项列表
     val rebootOptions = remember(context) {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
         val list = mutableListOf(
@@ -616,6 +601,7 @@ private fun TopBar(
         ),
         actions = {
             if (uiState.isCoreDataLoaded) {
+                // SuSFS 配置按钮
                 if (uiState.systemInfo.susfsVersionSupported) {
                     IconButton(onClick = {
                         navigator.push(Route.SuSFSConfig)
@@ -627,6 +613,7 @@ private fun TopBar(
                     }
                 }
 
+                // 重启按钮 - 美观的弹出对话框
                 KsuIsValid {
                     IconButton(onClick = {
                         showRebootDialog = true
@@ -689,6 +676,7 @@ private fun StatusCard(
                 foreContent = {
                     Spacer(Modifier.width(8.dp))
 
+                    // 工作模式标签
                     LabelText(
                         label = workingModeSurfaceText,
                         containerColor = MaterialTheme.colorScheme.primary
@@ -702,6 +690,7 @@ private fun StatusCard(
                         )
                     }
 
+                    // 架构标签
                     if (Os.uname().machine != "aarch64") {
                         Spacer(Modifier.width(6.dp))
                         LabelText(
@@ -838,6 +827,7 @@ private fun InfoCard(
                 description = systemInfo.androidVersion,
             )
         }
+
 
         item(
             visible = ksuIsValid()
