@@ -193,12 +193,14 @@ jobs:
 
       - name: Clear Gradle & Build Cache
         run: |
+          export DEVELOCITY_INJECTION_ENABLED=false
           ./gradlew clean --no-configuration-cache
           rm -rf ~/.gradle/caches ~/.gradle/wrapper
           rm -rf app/build app/.cxx
 
       - name: Build APK
         run: |
+          export DEVELOCITY_INJECTION_ENABLED=false
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache
           else
