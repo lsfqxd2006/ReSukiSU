@@ -243,4 +243,7 @@ dependencies {
     implementation(libs.accompanist.drawablepainter)
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-util")
+    implementation("javax.xml.bind:jaxb-api:2.3.1")
+    implementation("com.sun.xml.bind:jaxb-core:2.3.1")
+    implementation("com.sun.xml.bind:jaxb-impl:2.3.1")
 }
