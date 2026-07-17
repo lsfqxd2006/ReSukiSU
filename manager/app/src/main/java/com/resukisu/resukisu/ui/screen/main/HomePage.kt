@@ -11,7 +11,7 @@ import androidx.annotation.StringRes
 
 // Compose UI 核心
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.background
+import androidx.compose.foundation.background
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageVector
