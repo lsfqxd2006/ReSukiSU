@@ -20,7 +20,6 @@ import com.resukisu.resukisu.data.appPreferences
 import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.magica.BootCompletedReceiver
 import com.resukisu.resukisu.ui.screen.themeSettings.util.getCurrentAppLocale
-import com.resukisu.resukisu.ui.screen.themeSettings.util.toggleLauncherIcon
 import com.resukisu.resukisu.ui.theme.BackgroundManager
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
@@ -82,8 +81,6 @@ data class SettingsUiState(
     val currentAppLocale: Locale? = null,
     val showThemeColorDialog: Boolean = false,
 
-    val useAltIcon: Boolean = false,
-
     val cardAlpha: Float = 1f,
     val backgroundDim: Float = 0f,
     val isCustomBackgroundEnabled: Boolean = false,
@@ -144,7 +141,6 @@ class SettingsViewModel : ViewModel() {
                 dynamicColorSpec = ThemeConfig.dynamicColorSpec,
                 dynamicPaletteStyle = ThemeConfig.dynamicPaletteStyle,
                 currentAppLocale = getCurrentAppLocale(context),
-                useAltIcon = prefs.getBoolean("use_alt_icon", false),
                 cardAlpha = CardConfig.cardAlpha,
                 backgroundDim = ThemeConfig.backgroundDim,
                 isCustomBackgroundEnabled = ThemeConfig.customBackgroundUri != null,
@@ -426,14 +422,6 @@ class SettingsViewModel : ViewModel() {
 
     fun saveCardConfig(context: Context) {
         CardConfig.save(context)
-    }
-
-    fun handleIconChange(context: Context, newValue: Boolean) {
-        context.appPreferences.putBoolean("use_alt_icon", newValue)
-        toggleLauncherIcon(context, newValue)
-        _uiState.update { it.copy(useAltIcon = newValue) }
-        Toast.makeText(context, context.getString(R.string.icon_switched), Toast.LENGTH_SHORT)
-            .show()
     }
 
     fun handleCheckUpdateChange(context: Context, enabled: Boolean) {
