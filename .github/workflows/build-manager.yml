@@ -184,28 +184,22 @@ jobs:
       
       - name: Setup Java
         uses: actions/setup-java@v5
-        env:
-          DEVELOCITY_INJECTION_ENABLED: "false"
-          GRADLE_INIT_SCRIPTS: ""
         with:
           distribution: temurin
-          java-version: 17
-          
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
-
-      - name: Clear Gradle & Build Cache
-        run: |
-          ./gradlew clean --no-configuration-cache
-          rm -rf ~/.gradle/caches ~/.gradle/wrapper
-          rm -rf app/build app/.cxx
 
       - name: Build APK
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true
           else
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} --no-configuration-cache
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }}
           fi
 
       - name: Upload artifact
