@@ -186,7 +186,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -196,16 +196,16 @@ jobs:
 
       - name: Clear Gradle & Build Cache
         run: |
-          ./gradlew clean --no-configuration-cache -Dorg.gradle.jvmargs=--add-modules=java.xml.bind
+          ./gradlew clean --no-configuration-cache
           rm -rf ~/.gradle/caches ~/.gradle/wrapper
           rm -rf app/build app/.cxx
 
       - name: Build APK
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache -Dorg.gradle.jvmargs=--add-modules=java.xml.bind
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} -PIS_PR_BUILD=true --no-configuration-cache
           else
-            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} --no-configuration-cache -Dorg.gradle.jvmargs=--add-modules=java.xml.bind
+            ./gradlew assemble${{ matrix.build_type }} -Pcommit=${{ steps.commit.outputs.COMMIT_SHA }} --no-configuration-cache
           fi
 
       - name: Upload artifact
