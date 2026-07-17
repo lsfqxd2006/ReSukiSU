@@ -194,6 +194,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
+      - name: Clear Gradle & Build Cache
+        run: |
+          ./gradlew clean
+          rm -rf ~/.gradle/caches ~/.gradle/wrapper
+          rm -rf app/build app/.cxx
+
       - name: Build APK
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
