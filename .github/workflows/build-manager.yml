@@ -186,6 +186,7 @@ jobs:
         uses: actions/setup-java@v5
         env:
           DEVELOCITY_INJECTION_ENABLED: "false"
+          GRADLE_OPTS: "-Ddevelocity.injection.enabled=false --add-opens=java.xml.bind/javax.xml.bind.annotation=ALL-UNNAMED"
         with:
           distribution: temurin
           java-version: 17
