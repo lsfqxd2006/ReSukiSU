@@ -156,7 +156,6 @@ android {
     compileOptions {
         sourceCompatibility = androidSourceCompatibility
         targetCompatibility = androidTargetCompatibility
-        arguments("--add-modules=java.xml.bind")
     }
 }
 
