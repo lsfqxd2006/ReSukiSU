@@ -2,7 +2,7 @@
 use std::os::unix::fs::PermissionsExt;
 use std::{
     fs::File,
-    io::{BufReader, Cursor, Read, Seek, SeekFrom},
+    io::{Cursor, Seek, SeekFrom},
     path::PathBuf,
 };
 
