@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 
 // Compose UI 核心
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.background
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageVector
@@ -110,12 +111,10 @@ import androidx.compose.runtime.var
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// 【关键修复item、SegmentedColumn、SettingsBaseWidget】
+// 项目内部业务 - 修正包名
 import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.component.settings.item
-
-// 项目内部业务
 import com.resukisu.resukisu.BuildConfig
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
@@ -174,10 +173,9 @@ private fun RebootDialog(
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val appDpi = prefs.getInt("app_dpi", 0)          // 读取保存的 DPI 值
+    val appDpi = prefs.getInt("app_dpi", 0)
     val defaultDensity = LocalDensity.current
 
-    // 计算自定义密度（基准 160）
     val customDensity = remember(appDpi, defaultDensity.fontScale) {
         if (appDpi > 0) {
             val newDensity = appDpi.toFloat() / 160f
@@ -188,7 +186,6 @@ private fun RebootDialog(
     }
 
     BasicAlertDialog(onDismissRequest = onDismiss) {
-        // 覆盖 LocalDensity，使内部所有 dp 和 sp 按自定义密度换算
         CompositionLocalProvider(LocalDensity provides customDensity) {
             Surface(
                 shape = RoundedCornerShape(28.dp),
@@ -358,7 +355,6 @@ fun HomePage(
                         }
                     }
 
-                    // 警告信息
                     if (BuildConfig.DEBUG) {
                         WarningCard(
                             message = stringResource(R.string.debug_version_notice),
@@ -444,8 +440,6 @@ fun HomePage(
                         onClickJailbreak = {
                             loadingDialog.showLoading()
                             context.startService(Intent(context, MagicaService::class.java))
-                            // Manager will be force-stopped and restarted by late-load on success.
-                            // If that doesn't happen within timeout, jailbreak likely failed.
                             scope.launch(Dispatchers.IO) {
                                 delay(30_000)
                                 withContext(Dispatchers.Main) {
@@ -487,7 +481,6 @@ fun HomePage(
                     )
                 }
 
-                // 链接卡片
                 if (!uiState.isSimpleMode && !uiState.isHideLinkCard) {
                     DonateCard()
                     LearnMoreCard()
@@ -583,11 +576,8 @@ private fun TopBar(
 ) {
     val navigator = LocalNavigator.current
     var showRebootDialog by remember { mutableStateOf(false) }
-
-    // 获取 context 以避免在 remember 内部直接调用 LocalContext.current
     val context = LocalContext.current
 
-    // 动态构建重启选项列表（保留原有所有选项，包括软重启、userspace等）
     val rebootOptions = remember(context) {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
         val list = mutableListOf(
@@ -629,7 +619,6 @@ private fun TopBar(
         ),
         actions = {
             if (uiState.isCoreDataLoaded) {
-                // SuSFS 配置按钮
                 if (uiState.systemInfo.susfsVersionSupported) {
                     IconButton(onClick = {
                         navigator.push(Route.SuSFSConfig)
@@ -641,7 +630,6 @@ private fun TopBar(
                     }
                 }
 
-                // 重启按钮 - 美观的弹出对话框
                 KsuIsValid {
                     IconButton(onClick = {
                         showRebootDialog = true
@@ -704,7 +692,6 @@ private fun StatusCard(
                 foreContent = {
                     Spacer(Modifier.width(8.dp))
 
-                    // 工作模式标签
                     LabelText(
                         label = workingModeSurfaceText,
                         containerColor = MaterialTheme.colorScheme.primary
@@ -718,7 +705,6 @@ private fun StatusCard(
                         )
                     }
 
-                    // 架构标签
                     if (Os.uname().machine != "aarch64") {
                         Spacer(Modifier.width(6.dp))
                         LabelText(
@@ -855,7 +841,6 @@ private fun InfoCard(
                 description = systemInfo.androidVersion,
             )
         }
-
 
         item(
             visible = ksuIsValid()
