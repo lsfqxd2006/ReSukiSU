@@ -161,10 +161,27 @@ class MainActivity : ComponentActivity() {
         ThemeUtils.initializeThemeSettings(this, settingsViewModel)
     }
 
+    // ========== 新增：刷新数据 ==========
+    private fun refreshDataOnResume() {
+        if (::homeViewModel.isInitialized) {
+            homeViewModel.refreshData(applicationContext, refreshUI = true)
+        }
+        if (::moduleViewModel.isInitialized) {
+            moduleViewModel.fetchModuleList(manualRefresh = true)
+        }
+        if (::superUserViewModel.isInitialized) {
+            lifecycleScope.launch {
+                superUserViewModel.fetchAppList()
+            }
+        }
+    }
+    // ========== 新增结束 ==========
+
     override fun onResume() {
         try {
             super.onResume()
             ThemeUtils.onActivityResume()
+             refreshDataOnResume()  // 新增调用刷新
         } catch (e: Exception) {
             e.printStackTrace()
         }
