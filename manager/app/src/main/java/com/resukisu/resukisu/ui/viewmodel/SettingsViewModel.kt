@@ -191,6 +191,9 @@ class SettingsViewModel : ViewModel() {
 
     fun loadFeatureSettings(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
+            // ✅ 在这里添加一行：强制从持久化存储恢复状态
+            execKsud("feature apply", true)
+          
             val prefs = context.appPreferences
             val currentSuEnabled = runCatching { Natives.isSuEnabled() }.getOrDefault(false)
             val suPersistValue = runCatching { getFeaturePersistValue("su_compat") }.getOrNull()
