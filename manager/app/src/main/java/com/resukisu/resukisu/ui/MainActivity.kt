@@ -160,28 +160,28 @@ class MainActivity : ComponentActivity() {
         // Initialize theme settings.
         ThemeUtils.initializeThemeSettings(this, settingsViewModel)
     }
-
-    // ========== 新增：刷新数据 ==========
+    
+    //新增刷新方法代码开始
     private fun refreshDataOnResume() {
         if (::homeViewModel.isInitialized) {
-            homeViewModel.refreshData(applicationContext, refreshUI = true)
+            homeViewModel.refreshData(applicationContext, refreshUI = false)
         }
         if (::moduleViewModel.isInitialized) {
-            moduleViewModel.fetchModuleList(manualRefresh = true)
+            moduleViewModel.fetchModuleList(manualRefresh = false)
         }
         if (::superUserViewModel.isInitialized) {
             lifecycleScope.launch {
-                superUserViewModel.fetchAppList()
+                superUserViewModel.fetchAppList(silent = true)
             }
         }
     }
-    // ========== 新增结束 ==========
-
+    //新增刷新方法代码结束
+    
     override fun onResume() {
         try {
             super.onResume()
             ThemeUtils.onActivityResume()
-             refreshDataOnResume()  // 新增调用刷新
+            refreshDataOnResume()  //新增刷新方法调用
         } catch (e: Exception) {
             e.printStackTrace()
         }
