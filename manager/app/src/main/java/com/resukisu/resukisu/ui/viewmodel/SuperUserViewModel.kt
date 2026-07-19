@@ -274,20 +274,14 @@ class SuperUserViewModel : ViewModel() {
         }
     }
 
-    suspend fun fetchAppList(silent: Boolean = false) {
+    suspend fun fetchAppList() {
         if (_uiState.value.isRefreshing) return
 
-        // 增加判断静默时不触发动画
-        if (!silent) {
-            _uiState.update { it.copy(isRefreshing = true, loadingProgress = 0f) }
-        }
+        _uiState.update { it.copy(isRefreshing = true, loadingProgress = 0f) }
 
         try {
             val binder = connectKsuService() ?: run {
-                // 增加判断静默时不触发动画
-                if (!silent) {
-                    _uiState.update { it.copy(isRefreshing = false) }
-                }
+                _uiState.update { it.copy(isRefreshing = false) }
                 return
             }
 
@@ -316,10 +310,7 @@ class SuperUserViewModel : ViewModel() {
                         }
                     }
                     start += page.size
-                    // 增加判断静默时不触发动画
-                    if (!silent) {
-                        _uiState.update { it.copy(loadingProgress = start.toFloat() / total) }
-                    }
+                    _uiState.update { it.copy(loadingProgress = start.toFloat() / total) }
                 }
 
                 appListMutex.withLock {
@@ -345,10 +336,7 @@ class SuperUserViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.e(TAG, "Error refresh app list", e)
         } finally {
-            // 增加判断静默时不触发动画
-	    if (!silent) {
-                _uiState.update { it.copy(isRefreshing = false) }
-	    }
+            _uiState.update { it.copy(isRefreshing = false) }
             stopKsuService()
         }
     }
