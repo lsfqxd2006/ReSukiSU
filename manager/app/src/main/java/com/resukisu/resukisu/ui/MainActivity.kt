@@ -164,14 +164,14 @@ class MainActivity : ComponentActivity() {
     //新增刷新方法代码开始
     private fun refreshDataOnResume() {
         if (::homeViewModel.isInitialized) {
-            homeViewModel.refreshData(applicationContext, refreshUI = false)
+            homeViewModel.refreshData(applicationContext, refreshUI = true)
         }
         if (::moduleViewModel.isInitialized) {
-            moduleViewModel.fetchModuleList(manualRefresh = false)
+            moduleViewModel.fetchModuleList(manualRefresh = true)
         }
         if (::superUserViewModel.isInitialized) {
             lifecycleScope.launch {
-                superUserViewModel.fetchAppList(silent = true)
+                superUserViewModel.fetchAppList()
             }
         }
     }
