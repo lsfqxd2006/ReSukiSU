@@ -161,21 +161,24 @@ class MainActivity : ComponentActivity() {
         ThemeUtils.initializeThemeSettings(this, settingsViewModel)
     }
     
-    //新增刷新方法代码开始
+    // 新增刷新方法代码开始
     private fun refreshDataOnResume() {
+        // 1. 主页：静默刷新（与下拉刷新逻辑一致，仅无动画）
         if (::homeViewModel.isInitialized) {
-            homeViewModel.refreshData(applicationContext, refreshUI = true)
+            homeViewModel.refreshDataSilently(applicationContext)
         }
+        // 2. 模块页面：静默刷新（manualRefresh = true 完整检查更新，silent = true 无动画）
         if (::moduleViewModel.isInitialized) {
-            moduleViewModel.fetchModuleList(manualRefresh = true)
+            moduleViewModel.fetchModuleList(manualRefresh = true, silent = true)
         }
+        // 3. 超级用户页面：静默刷新
         if (::superUserViewModel.isInitialized) {
             lifecycleScope.launch {
-                superUserViewModel.fetchAppList()
+                superUserViewModel.fetchAppList(silent = true)
             }
         }
     }
-    //新增刷新方法代码结束
+    // 新增刷新方法代码结束
     
     override fun onResume() {
         try {
