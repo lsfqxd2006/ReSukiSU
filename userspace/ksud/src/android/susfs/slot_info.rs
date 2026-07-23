@@ -1,6 +1,7 @@
 use std::{
     io::{Cursor, Read},
     path::{Path, PathBuf},
+    sync::mpsc::channel,
 };
 
 use android_bootimg::parser::BootImage;
@@ -24,7 +25,7 @@ const LZ4_FRAME_MAGIC_2: [u8; 4] = [0x04, 0x22, 0x4d, 0x18];
 
 // Global verbose flag for debug output
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct SlotInfo {
     slot_name: String,
     uname: String,
@@ -63,27 +64,43 @@ impl std::fmt::Display for CompressionFormat {
 pub fn show_slot_info_json() -> Result<()> {
     log::debug!("Starting slot_info enumeration from /dev/block/by-name");
 
-    let mut result = Vec::<SlotInfo>::new();
+    let (send, recv) = channel::<SlotInfo>();
+    let mut jobs = Vec::<std::thread::JoinHandle<_>>::new();
 
     for (slot_name, slot_path) in list_boot_slots() {
-        log::debug!("Processing slot: {} at {}", slot_name, slot_path.display());
-        match extract_slot_kernel_info(&slot_path) {
-            Ok((uname, build_time)) => {
-                log::info!("Successfully extracted info from {}", slot_name);
-                log::debug!("  build_time: {}", build_time);
-                result.push(SlotInfo {
-                    slot_name,
-                    uname,
-                    build_time,
-                });
-            }
-            Err(e) => {
-                log::warn!("Failed to extract info from {}: {}", slot_name, e);
-            }
-        }
+        let send = send.clone();
+        jobs.push(
+            std::thread::Builder::new()
+                .name(format!("analyze_{slot_name}"))
+                .spawn(move || {
+                    log::debug!("Processing slot: {} at {}", slot_name, slot_path.display());
+
+                    match extract_slot_kernel_info(&slot_path) {
+                        Ok((uname, build_time)) => {
+                            log::info!("Successfully extracted info from {}", slot_name);
+                            log::debug!("  build_time: {}", build_time);
+                            let _ = send.send(SlotInfo {
+                                slot_name,
+                                uname,
+                                build_time,
+                            });
+                        }
+                        Err(e) => {
+                            log::warn!("Failed to extract info from {}: {}", slot_name, e);
+                        }
+                    }
+                })?,
+        );
+    }
+
+    let mut result = Vec::new();
+    for job in jobs {
+        job.join().unwrap();
+        result.push(recv.recv()?);
     }
 
     println!("{}", serde_json::to_string(&result)?);
+
     Ok(())
 }
 
@@ -356,11 +373,6 @@ fn decompress_kernel_payload(input: &[u8]) -> Result<Vec<u8>> {
         "Starting kernel payload decompression, size: {} bytes",
         input.len()
     );
-
-    // Detect initial format and log it
-    let initial_fmt = detect_format(input);
-    log::debug!("Initial detected compression format: {}", initial_fmt);
-    log::info!("Kernel compression format: {}", initial_fmt);
 
     let mut payload = input.to_vec();
     let mut depth = 0usize;
