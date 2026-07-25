@@ -17,13 +17,27 @@ val managerVersionCode by extra(30000 + getGitCommitCount() + 700)
 val managerVersionName by extra(getGitDescribe())
 
 fun getGitCommitCount(): Int {
-    return providers.exec {
-        commandLine("git", "rev-list", "--count", "HEAD")
-    }.standardOutput.asText.get().trim().toInt()
+    return try {
+        val hash = providers.exec {
+            commandLine("git", "ls-remote", "https://github.com/ReSukiSU/ReSukiSU.git", "main")
+        }.standardOutput.asText.get().split("\\s+".toRegex())[0]
+        providers.exec {
+            commandLine("git", "fetch", "https://github.com/ReSukiSU/ReSukiSU.git", "$hash")
+        }
+        providers.exec {
+            commandLine("git", "rev-list", "--count", "$hash")
+        }.standardOutput.asText.get().trim().toInt()
+    } catch (e: Exception) {
+        0
+    }
 }
 
 fun getGitDescribe(): String {
-    return providers.exec {
-        commandLine("git", "describe", "--tags", "--always", "--abbrev=0")
-    }.standardOutput.asText.get().trim()
+    return try {
+        providers.exec { commandLine("git", "ls-remote", "--tags", "--sort=-v:refname", "https://github.com/ReSukiSU/ReSukiSU.git") }
+            .standardOutput.asText.get()
+            .lineSequence()
+            .firstOrNull { it.contains("refs/tags/") && !it.contains("^") }
+            ?.substringAfterLast("/") ?: "unknown"
+    } catch (e: Exception) { "unknown" }
 }

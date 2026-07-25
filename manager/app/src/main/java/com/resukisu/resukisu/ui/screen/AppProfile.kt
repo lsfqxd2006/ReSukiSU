@@ -88,7 +88,9 @@ import com.resukisu.resukisu.ui.util.setSepolicy
 import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
 import com.resukisu.resukisu.ui.viewmodel.getTemplateInfoById
 import kotlinx.coroutines.launch
-
+import androidx.lifecycle.ViewModelProvider
+import com.resukisu.resukisu.ksuApp
+import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 /**
  * @author weishu
  * @date 2023/5/16.

@@ -622,17 +622,6 @@ private fun CustomizationSettings(
     val context = LocalContext.current
     SegmentedColumn(title = stringResource(R.string.custom_settings)) {
         item {
-            // 图标切换
-            SettingsSwitchWidget(
-                icon = Icons.TwoTone.Android,
-                title = stringResource(R.string.icon_switch_title),
-                description = stringResource(R.string.icon_switch_summary),
-                checked = settingsUiState.useAltIcon,
-                onCheckedChange = { settingsViewModel.handleIconChange(context, it) }
-            )
-        }
-
-        item {
             // 显示更多模块信息
             SettingsSwitchWidget(
                 icon = Icons.TwoTone.Info,

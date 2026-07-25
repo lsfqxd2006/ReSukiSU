@@ -1,0 +1,94 @@
+name: Release ReSukiSU
+  
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  packages: read
+jobs:
+  build:
+    uses: ./.github/workflows/build-manager.yml
+    secrets: inherit
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: ./artifacts
+
+      - name: Tree artifacts
+        run: find ./artifacts
+
+      # ==========================================
+      # 正确读取版本号
+      # ==========================================
+      - name: Get version from APK
+        id: ver
+        run: |
+          APK=$(find ./artifacts -name "*.apk" | grep Manager-release | head -1)
+          VERSION=$(echo "$APK" | grep -oE 'v[0-9.]+_[0-9]+' | head -1)
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "title=ReSukiSU $VERSION" >> $GITHUB_OUTPUT
+
+      # ==========================================
+      # 统一压缩：全部带 .zip 后缀！全部正常！
+      # ==========================================
+      - name: Pack all files (ALL .zip UNIFORM)
+        run: |
+          mkdir -p upload
+          
+          # Manager
+          cd ./artifacts/Manager-debug && zip -rq ../../upload/Manager-debug.zip . && cd ../..
+          cd ./artifacts/Manager-release && zip -rq ../../upload/Manager-release.zip . && cd ../..
+          cd ./artifacts/Spoofed-Manager-debug && zip -rq ../../upload/Spoofed-Manager-debug.zip . && cd ../..
+          cd ./artifacts/Spoofed-Manager-release && zip -rq ../../upload/Spoofed-Manager-release.zip . && cd ../..
+          
+          # LKM 全部强制带 .zip！！！
+          cd ./artifacts/android12-5.10-lkm && zip -rq ../../upload/android12-5.10-lkm.zip . && cd ../..
+          cd ./artifacts/android13-5.10-lkm && zip -rq ../../upload/android13-5.10-lkm.zip . && cd ../..
+          cd ./artifacts/android13-5.15-lkm && zip -rq ../../upload/android13-5.15-lkm.zip . && cd ../..
+          cd ./artifacts/android14-5.15-lkm && zip -rq ../../upload/android14-5.15-lkm.zip . && cd ../..
+          cd ./artifacts/android14-6.1-lkm && zip -rq ../../upload/android14-6.1-lkm.zip . && cd ../..
+          cd ./artifacts/android15-6.6-lkm && zip -rq ../../upload/android15-6.6-lkm.zip . && cd ../..
+          cd ./artifacts/android16-6.12-lkm && zip -rq ../../upload/android16-6.12-lkm.zip . && cd ../..
+          
+          # ksud
+          cd ./artifacts/ksud-aarch64-linux-android && zip -rq ../../upload/ksud-aarch64-linux-android.zip . && cd ../..
+          cd ./artifacts/ksud-armv7-linux-androideabi && zip -rq ../../upload/ksud-armv7-linux-androideabi.zip . && cd ../..
+          cd ./artifacts/ksud-x86_64-linux-android && zip -rq ../../upload/ksud-x86_64-linux-android.zip . && cd ../..
+          
+          # ksuinit
+          cd ./artifacts/ksuinit && zip -rq ../../upload/ksuinit.zip . && cd ../..
+
+      - name: List upload files
+        run: ls -la ./upload
+
+      # 创建 TAG
+      - name: Create and push tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "${{ steps.ver.outputs.tag }}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" "${{ steps.ver.outputs.tag }}"
+
+      # ==========================================
+      # 发布全部 .zip 文件
+      # ==========================================
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.title }}
+          files: ./upload/*
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

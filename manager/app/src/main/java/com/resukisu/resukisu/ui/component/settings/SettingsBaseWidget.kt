@@ -202,7 +202,7 @@ fun SettingsBaseWidget(
 
     val shapes = ListItemDefaults.shapes(
         shape = baseShape,
-        pressedShape = RoundedCornerShape(16.dp),
+        pressedShape = baseShape,
         selectedShape = baseShape,
         focusedShape = baseShape,
         hoveredShape = baseShape

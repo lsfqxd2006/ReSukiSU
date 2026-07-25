@@ -108,11 +108,119 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.outlined.RotateRight
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.DeveloperMode
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
  */
+
+// ==================== 重启菜单相关数据类和组件 ====================
+
+private data class RebootOption(
+    @StringRes val titleRes: Int,
+    val reason: String,
+    val icon: ImageVector
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RebootDialog(
+    show: Boolean,
+    onDismiss: () -> Unit,
+    options: List<RebootOption>,
+    onReboot: (String) -> Unit
+) {
+    if (!show) return
+
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val appDpi = prefs.getInt("app_dpi", 0)
+    val defaultDensity = LocalDensity.current
+
+    val customDensity = remember(appDpi, defaultDensity.fontScale) {
+        if (appDpi > 0) {
+            val newDensity = appDpi.toFloat() / 160f
+            Density(density = newDensity, fontScale = defaultDensity.fontScale)
+        } else {
+            defaultDensity
+        }
+    }
+
+    BasicAlertDialog(onDismissRequest = onDismiss) {
+        CompositionLocalProvider(LocalDensity provides customDensity) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Column(
+                        modifier = Modifier.padding(top = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        options.forEach { option ->
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                onClick = {
+                                    onDismiss()
+                                    onReboot(option.reason)
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = option.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = stringResource(option.titleRes),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomePage(
@@ -441,22 +549,6 @@ private fun ManagerUpdateCardContent(updateInfo: ManagerUpdateInfo) {
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun RebootDropdownItems(items: Map<Int, String>) {
-    items.onEachIndexed { index, (id, reason) ->
-        DropdownMenuItem(
-            selected = false,
-            text = { Text(stringResource(id)) },
-            onClick = { reboot(reason) },
-            shapes = MenuDefaults.itemShape(
-                index = index,
-                count = items.size
-            )
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
@@ -464,6 +556,29 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val navigator = LocalNavigator.current
+    var showRebootDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // 动态构建重启选项列表
+    val rebootOptions = remember(context) {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
+        val list = mutableListOf(
+            RebootOption(R.string.reboot, "", Icons.Filled.Refresh),
+            RebootOption(R.string.reboot_soft, "soft_reboot", Icons.AutoMirrored.Outlined.RotateRight)
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
+            list.add(RebootOption(R.string.reboot_userspace, "userspace", Icons.Filled.Refresh))
+        }
+        list.addAll(
+            listOf(
+                RebootOption(R.string.reboot_recovery, "recovery", Icons.Outlined.SystemUpdate),
+                RebootOption(R.string.reboot_bootloader, "bootloader", Icons.Outlined.Memory),
+                RebootOption(R.string.reboot_download, "download", Icons.Outlined.Download),
+                RebootOption(R.string.reboot_edl, "edl", Icons.Outlined.DeveloperMode)
+            )
+        )
+        list
+    }
 
     LargeFlexibleTopAppBar(
         modifier = Modifier.blurEffect(),
@@ -498,43 +613,23 @@ private fun TopBar(
                     }
                 }
 
-                // 重启按钮
-                var showDropdown by remember { mutableStateOf(false) }
+                // 重启按钮 - 美观的弹出对话框
                 KsuIsValid {
                     IconButton(onClick = {
-                        showDropdown = true
+                        showRebootDialog = true
                     }) {
                         Icon(
                             imageVector = Icons.TwoTone.PowerSettingsNew,
                             contentDescription = stringResource(id = R.string.reboot)
                         )
-
-                        DropdownMenuPopup(expanded = showDropdown, onDismissRequest = {
-                            showDropdown = false
-                        }) {
-                            DropdownMenuGroup(
-                                shapes = MenuDefaults.groupShapes()
-                            ) {
-                                val pm =
-                                    LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-                                var methods = mapOf(
-                                    R.string.reboot to "",
-                                    R.string.reboot_soft to "soft_reboot",
-                                    R.string.reboot_recovery to "recovery",
-                                    R.string.reboot_bootloader to "bootloader",
-                                    R.string.reboot_download to "download",
-                                    R.string.reboot_edl to "edl"
-                                )
-
-                                @Suppress("DEPRECATION")
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
-                                    methods = methods + (R.string.reboot_userspace to "userspace")
-                                }
-
-                                RebootDropdownItems(methods)
-                            }
-                        }
                     }
+
+                    RebootDialog(
+                        show = showRebootDialog,
+                        onDismiss = { showRebootDialog = false },
+                        options = rebootOptions,
+                        onReboot = { reason -> reboot(reason) }
+                    )
                 }
             }
         },
