@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.resukisu.resukisu.ksuApp
@@ -155,7 +156,9 @@ private fun NavigationRailItem(
             Text(
                 stringResource(destination.label),
                 style = MaterialTheme.typography.labelMedium,
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Visible
             )
         },
     )
@@ -195,7 +198,9 @@ private fun RowScope.BottomBarNavigationItem(
             Text(
                 stringResource(destination.label),
                 style = MaterialTheme.typography.labelMedium,
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Visible
             )
         },
         alwaysShowLabel = false
