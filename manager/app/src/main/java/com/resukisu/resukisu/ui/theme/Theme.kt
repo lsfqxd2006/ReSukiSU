@@ -94,9 +94,8 @@ import com.resukisu.resukisu.ui.util.LocalPagerPage
 import com.resukisu.resukisu.ui.util.LocalPagerState
 import com.resukisu.resukisu.ui.util.LocalStretchOverscrollCompensationState
 import com.resukisu.resukisu.ui.webui.MonetColorsProvider
-import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
@@ -288,21 +287,30 @@ object BackgroundManager {
         context.appPreferences.putBoolean("high_contrast_mode", enable)
     }
 
-    fun saveAndApplyCustomBackground(
+    suspend fun saveAndApplyCustomBackground(
         context: Context,
         uri: Uri
-    ) {
-        try {
-            val finalUri = copyImageToInternalStorage(context, uri)
+    ): Boolean {
+        val appContext = context.applicationContext
+        return try {
+            val finalUri = withContext(Dispatchers.IO) {
+                copyImageToInternalStorage(appContext, uri)
+            } ?: return false
 
-            saveBackgroundUri(context, finalUri)
+            saveBackgroundUri(appContext, finalUri)
             ThemeConfig.customBackgroundUri = finalUri
             CardConfig.updateBackground(true)
-            clearBackgroundBlurCache(context)
-            resetBackgroundState(context)
+            withContext(Dispatchers.IO) {
+                clearBackgroundBlurCache(appContext)
+            }
+            resetBackgroundState(appContext)
 
+            true
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "保存背景失败: ${e.message}", e)
+            false
         }
     }
 
@@ -1870,27 +1878,6 @@ private fun SystemBarController(darkMode: Boolean) {
                 )
             }
         )
-    }
-}
-
-// 向后兼容
-@OptIn(DelicateCoroutinesApi::class)
-fun Context.saveAndApplyCustomBackground(
-    uri: Uri
-) {
-    GlobalScope.launch {
-        BackgroundManager.saveAndApplyCustomBackground(
-            this@saveAndApplyCustomBackground,
-            uri
-        )
-    }
-}
-
-fun Context.saveCustomBackground(uri: Uri?) {
-    if (uri != null) {
-        saveAndApplyCustomBackground(uri)
-    } else {
-        BackgroundManager.clearCustomBackground(this)
     }
 }
 

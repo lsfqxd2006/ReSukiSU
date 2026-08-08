@@ -15,7 +15,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -111,7 +110,6 @@ import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.renderBackgroundBlur
-import com.resukisu.resukisu.ui.util.ActivityResumeEffect
 import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 import com.resukisu.resukisu.ui.viewmodel.ModuleUiState
@@ -139,8 +137,6 @@ fun ThemeSettingsScreen() {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val systemIsDark = isSystemInDarkTheme()
-
     // 创建设置状态管理器
     val settingsViewModel = viewModel<SettingsViewModel>(viewModelStoreOwner = ksuApp)
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
@@ -273,12 +269,6 @@ fun ThemeSettingsScreen() {
             }
         }
     )
-
-    // 初始化设置，并在 Activity 恢复时重新同步持久化状态。
-    ActivityResumeEffect(systemIsDark) {
-        settingsViewModel.initialize(context, systemIsDark)
-        moduleViewModel.refreshUserSettings(context)
-    }
 
     // 各种设置对话框
     ThemeSettingsDialogs(
@@ -597,7 +587,7 @@ private fun AppearanceSettings(
         }
 
         expandableItem(
-            expanded = ThemeConfig.customBackgroundUri != null,
+            expanded = state.isCustomBackgroundEnabled,
             topContent = {
                 CustomBackgroundSettings(
                     state = state,

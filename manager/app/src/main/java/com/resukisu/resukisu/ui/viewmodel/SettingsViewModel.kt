@@ -24,8 +24,6 @@ import com.resukisu.resukisu.ui.screen.themeSettings.util.getCurrentAppLocale
 import com.resukisu.resukisu.ui.theme.BackgroundManager
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
-import com.resukisu.resukisu.ui.theme.saveAndApplyCustomBackground
-import com.resukisu.resukisu.ui.theme.saveCustomBackground
 import com.resukisu.resukisu.ui.theme.saveDynamicColorSpec
 import com.resukisu.resukisu.ui.theme.saveDynamicColorState
 import com.resukisu.resukisu.ui.theme.saveDynamicPaletteStyle
@@ -129,8 +127,25 @@ class SettingsViewModel : ViewModel() {
         val systemDpi = context.resources.displayMetrics.densityDpi
         val currentDpi = prefs.getInt("app_dpi", systemDpi)
         val checkModuleUpdate = loadModuleUpdatePreference(prefs)
+        val themeMode = when (ThemeConfig.forceDarkMode) {
+            true -> 2
+            false -> 1
+            null -> 0
+        }
+        val hasCustomBackground = prefs.getString("custom_background", null) != null
 
         CardConfig.load(context)
+        CardConfig.updateBackground(hasCustomBackground)
+
+        when (themeMode) {
+            2 -> CardConfig.updateThemePreference(darkMode = true, lightMode = false)
+            1 -> CardConfig.updateThemePreference(darkMode = false, lightMode = true)
+            else -> CardConfig.updateThemePreference(darkMode = null, lightMode = null)
+        }
+
+        if (themeMode == 0 && systemIsDark) {
+            CardConfig.setThemeDefaults(true)
+        }
 
         _uiState.update {
             it.copy(
@@ -141,11 +156,7 @@ class SettingsViewModel : ViewModel() {
                 predictiveBackExitDirection = PredictiveBackExitDirection.fromValueOrDefault(
                     prefs.getString("predictive_back_exit_direction", "") ?: ""
                 ),
-                themeMode = when (ThemeConfig.forceDarkMode) {
-                    true -> 2
-                    false -> 1
-                    null -> 0
-                },
+                themeMode = themeMode,
                 themeOptions = listOf(
                     context.getString(R.string.theme_follow_system),
                     context.getString(R.string.theme_light),
@@ -157,7 +168,7 @@ class SettingsViewModel : ViewModel() {
                 currentAppLocale = getCurrentAppLocale(context),
                 cardAlpha = CardConfig.cardAlpha,
                 backgroundDim = ThemeConfig.backgroundDim,
-                isCustomBackgroundEnabled = ThemeConfig.customBackgroundUri != null,
+                isCustomBackgroundEnabled = hasCustomBackground,
                 systemDpi = systemDpi,
                 currentDpi = currentDpi,
                 tempDpi = currentDpi,
@@ -168,27 +179,6 @@ class SettingsViewModel : ViewModel() {
                 checkModuleUpdate = checkModuleUpdate,
                 autoJailbreakEnabled = prefs.getBoolean("auto_jailbreak", false),
             )
-        }
-
-        when (_uiState.value.themeMode) {
-            2 -> {
-                CardConfig.isUserDarkModeEnabled = true
-                CardConfig.isUserLightModeEnabled = false
-            }
-
-            1 -> {
-                CardConfig.isUserDarkModeEnabled = false
-                CardConfig.isUserLightModeEnabled = true
-            }
-
-            0 -> {
-                CardConfig.isUserDarkModeEnabled = false
-                CardConfig.isUserLightModeEnabled = false
-            }
-        }
-
-        if (_uiState.value.themeMode == 0 && systemIsDark) {
-            CardConfig.setThemeDefaults(true)
         }
 
         CardConfig.save(context)
@@ -367,34 +357,48 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun handleCustomBackground(context: Context, transformedUri: Uri) {
-        context.saveAndApplyCustomBackground(transformedUri)
-        CardConfig.cardAlpha = 0.55f
-        BackgroundManager.saveBackgroundDim(context, 0.3f)
-        BackgroundManager.saveEnableBlur(context, true)
-        BackgroundManager.saveEnableBlurExp(context, false)
-        BackgroundManager.saveUseBackgroundSeedColor(context, true)
-        BackgroundManager.saveEnableHighContrastMode(context, false)
-        CardConfig.cardElevation = 0.dp
-        CardConfig.isCustomBackgroundEnabled = true
-        CardConfig.save(context)
-
-        _uiState.update {
-            it.copy(
-                isCustomBackgroundEnabled = true,
-                cardAlpha = CardConfig.cardAlpha,
-                backgroundDim = ThemeConfig.backgroundDim,
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            val backgroundApplied = BackgroundManager.saveAndApplyCustomBackground(
+                appContext,
+                transformedUri,
             )
-        }
+            if (!backgroundApplied) {
+                Toast.makeText(
+                    appContext,
+                    appContext.getString(R.string.background_crop_failed),
+                    Toast.LENGTH_SHORT,
+                ).show()
+                return@launch
+            }
 
-        Toast.makeText(
-            context,
-            context.getString(R.string.background_set_success),
-            Toast.LENGTH_SHORT
-        ).show()
+            BackgroundManager.saveBackgroundDim(appContext, 0.3f)
+            BackgroundManager.saveEnableBlur(appContext, true)
+            BackgroundManager.saveEnableBlurExp(appContext, false)
+            BackgroundManager.saveUseBackgroundSeedColor(appContext, true)
+            BackgroundManager.saveEnableHighContrastMode(appContext, false)
+            CardConfig.cardElevation = 0.dp
+            CardConfig.updateBackground(true)
+            CardConfig.save(appContext)
+
+            _uiState.update {
+                it.copy(
+                    isCustomBackgroundEnabled = true,
+                    cardAlpha = CardConfig.cardAlpha,
+                    backgroundDim = ThemeConfig.backgroundDim,
+                )
+            }
+
+            Toast.makeText(
+                appContext,
+                appContext.getString(R.string.background_set_success),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
     }
 
     fun handleRemoveCustomBackground(context: Context) {
-        context.saveCustomBackground(null)
+        BackgroundManager.clearCustomBackground(context)
         CardConfig.cardAlpha = 1f
         CardConfig.isCustomAlphaSet = false
         CardConfig.isCustomBackgroundEnabled = false
