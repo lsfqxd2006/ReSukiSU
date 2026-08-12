@@ -146,7 +146,7 @@ async def send_message(bot: Bot, chat_id: int, text: str, message_thread_id=None
     try:
         await asyncio.sleep(random.uniform(0.2, 0.8))
         return await bot.send_message(chat_id=chat_id, text=text, parse_mode=ParseMode.HTML, message_thread_id=message_thread_id,
-                                       read_timeout=350,write_timeout=350,connect_timeout=350,pool_timeout=350)
+                                       read_timeout=350,write_timeout=350,connect_timeout=350,pool_timeout=350,disable_web_page_preview=True)
     except RetryAfter as e:
         print(f"[-] Hit Telegram flood limit, retrying after {e.retry_after} seconds...")
         await asyncio.sleep(e.retry_after)
