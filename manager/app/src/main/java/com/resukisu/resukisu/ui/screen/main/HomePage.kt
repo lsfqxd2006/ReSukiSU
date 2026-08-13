@@ -130,6 +130,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
