@@ -639,7 +639,7 @@ private fun TopBar(
                 }
 
                 // 重启按钮 - 美观的弹出对话框
-                KsuIsValid {
+                KsuIsValid(uiState.systemStatus) {
                     IconButton(onClick = {
                         showRebootDialog = true
                     }) {
