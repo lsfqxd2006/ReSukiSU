@@ -133,6 +133,7 @@ import androidx.compose.ui.unit.Density
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Duration.Companion.milliseconds
+import com.resukisu.resukisu.ui.util.reboot
 /**
  * @author ShirkNeko
  * @date 2025/9/29.
