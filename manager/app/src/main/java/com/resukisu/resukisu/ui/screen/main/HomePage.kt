@@ -76,18 +76,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.resukisu.resukisu.BuildConfig
-import com.resukisu.resukisu.Natives
+import com.resukisu.resukisu.Natives.KernelPatchImplementation
 import com.resukisu.resukisu.R
-import com.resukisu.resukisu.data.update.ManagerUpdateChannel
-import com.resukisu.resukisu.data.update.ManagerUpdateInfo
-import com.resukisu.resukisu.ksuApp
+import com.resukisu.resukisu.domain.model.HomeSystemInfo
+import com.resukisu.resukisu.domain.model.KernelStatus
+import com.resukisu.resukisu.domain.model.ManagerUpdateChannel
+import com.resukisu.resukisu.domain.model.ManagerUpdateInfo
+import com.resukisu.resukisu.domain.usecase.EnqueueManagerUpdateUseCase
 import com.resukisu.resukisu.magica.MagicaService
 import com.resukisu.resukisu.ui.component.KsuIsValid
 import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
 import com.resukisu.resukisu.ui.component.WarningCard
-import com.resukisu.resukisu.ui.component.ksuIsValid
 import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.rememberLoadingDialog
 import com.resukisu.resukisu.ui.component.settings.SegmentedColumn
@@ -102,7 +102,8 @@ import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalPermissionRequestInterface
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.downloader.downloadManagerUpdate
-import com.resukisu.resukisu.ui.util.reboot
+import com.resukisu.resukisu.ui.viewmodel.HomeUiAction
+import com.resukisu.resukisu.ui.viewmodel.HomeUiEvent
 import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -230,13 +231,21 @@ fun HomePage(
     bottomPadding: Dp,
 ) {
     val context = LocalContext.current
-    val viewModel = viewModel<HomeViewModel>(
-        viewModelStoreOwner = ksuApp
-    )
+    val viewModel = koinViewModel<HomeViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.awaitInitialData(context)
+        viewModel.dispatch(HomeUiAction.AwaitInitialData)
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is HomeUiEvent.Error -> if (event.message.isNotBlank()) {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     if (!uiState.isInitialDataLoaded) return
@@ -253,6 +262,7 @@ fun HomePage(
         topBar = {
             TopBar(
                 uiState = uiState,
+                onReboot = { viewModel.dispatch(HomeUiAction.Reboot(it)) },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -271,7 +281,7 @@ fun HomePage(
         PullToRefreshBox(
             state = pullRefreshState,
             isRefreshing = uiState.isRefreshing,
-            onRefresh = { viewModel.refreshData(context, refreshUI = true) },
+            onRefresh = { viewModel.dispatch(HomeUiAction.Refresh()) },
             modifier = Modifier
                 .fillMaxSize()
                 .blurSource(),
@@ -367,7 +377,7 @@ fun HomePage(
                         )
                     }
 
-                    if (BuildConfig.IS_PR_BUILD || Natives.isPrBuild) {
+                    if (BuildConfig.IS_PR_BUILD || uiState.systemStatus.isPrBuild) {
                         WarningCard(
                             message = stringResource(
                                 id = R.string.home_pr_build_warning
@@ -383,7 +393,7 @@ fun HomePage(
                         )
                     }
 
-                    if (uiState.systemStatus.kernelPatchImplement == Natives.KernelPatchImplement.KERNEL_PATCH_OFFICIAL) {
+                    if (uiState.systemStatus.kernelPatchImplementation == KernelPatchImplementation.OFFICIAL) {
                         WarningCard(
                             message = stringResource(
                                 R.string.conflict_with_apatch,
@@ -424,7 +434,7 @@ fun HomePage(
                             // Manager will be force-stopped and restarted by late-load on success.
                             // If that doesn't happen within timeout, jailbreak likely failed.
                             scope.launch(Dispatchers.IO) {
-                                delay(30_000)
+                                delay(30_000.milliseconds)
                                 withContext(Dispatchers.Main) {
                                     loadingDialog.hide()
                                     Toast.makeText(
@@ -501,6 +511,7 @@ private fun ManagerUpdateCard(update: ManagerUpdateInfo?) {
 private fun ManagerUpdateCardContent(updateInfo: ManagerUpdateInfo) {
     val context = LocalContext.current
     val permissionRequestInterface = LocalPermissionRequestInterface.current
+    val enqueueManagerUpdate = koinInject<EnqueueManagerUpdateUseCase>()
     val channelTitle = stringResource(
         if (updateInfo.channel == ManagerUpdateChannel.STABLE) {
             R.string.manager_update_stable
@@ -527,7 +538,12 @@ private fun ManagerUpdateCardContent(updateInfo: ManagerUpdateInfo) {
     }
     val updateDialog = rememberConfirmDialog(
         onConfirm = {
-            downloadManagerUpdate(context, permissionRequestInterface, updateInfo)
+            downloadManagerUpdate(
+                context,
+                permissionRequestInterface,
+                updateInfo,
+                enqueueManagerUpdate,
+            )
         }
     )
 
@@ -556,8 +572,11 @@ private fun ManagerUpdateCardContent(updateInfo: ManagerUpdateInfo) {
 @Composable
 private fun TopBar(
     uiState: HomeUiState,
+    onReboot: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
+    val themeConfig: ThemeConfig = koinInject()
+    val cardConfig: CardConfig = koinInject()
     val navigator = LocalNavigator.current
     var showRebootDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -592,15 +611,15 @@ private fun TopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor =
-                if (ThemeConfig.isEnableBlur)
+                if (themeConfig.isEnableBlur)
                     Color.Transparent
                 else
-                    MaterialTheme.colorScheme.surfaceContainer.copy(CardConfig.cardAlpha),
+                    MaterialTheme.colorScheme.surfaceContainer.copy(cardConfig.cardAlpha),
             scrolledContainerColor =
-                if (ThemeConfig.isEnableBlur)
+                if (themeConfig.isEnableBlur)
                     Color.Transparent
                 else
-                    MaterialTheme.colorScheme.surfaceContainer.copy(CardConfig.cardAlpha),
+                    MaterialTheme.colorScheme.surfaceContainer.copy(cardConfig.cardAlpha),
         ),
         actions = {
             if (uiState.isCoreDataLoaded) {
@@ -657,7 +676,7 @@ private fun StatusCard(
     when {
         systemStatus.ksuVersion != null -> {
             val workingModeText = when {
-                Natives.isSafeMode -> stringResource(id = R.string.safe_mode)
+                systemStatus.isSafeMode -> stringResource(id = R.string.safe_mode)
                 else -> stringResource(id = R.string.home_working)
             }
 
@@ -685,7 +704,7 @@ private fun StatusCard(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
 
-                    if (Natives.isLateLoadMode) {
+                    if (systemStatus.isLateLoadMode) {
                         Spacer(Modifier.width(6.dp))
                         LabelText(
                             label = stringResource(id = R.string.jailbreak_mode),
@@ -791,8 +810,8 @@ fun DonateCard() {
 
 @Composable
 private fun InfoCard(
-    systemStatus: HomeViewModel.SystemStatus,
-    systemInfo: HomeViewModel.SystemInfo,
+    systemStatus: KernelStatus,
+    systemInfo: HomeSystemInfo,
     isSimpleMode: Boolean,
     isHideSusfsStatus: Boolean,
     isHideZygiskImplement: Boolean,
@@ -833,7 +852,7 @@ private fun InfoCard(
 
 
         item(
-            visible = ksuIsValid()
+            visible = systemStatus.isValid
         ) {
             SettingsBaseWidget(
                 iconPlaceholder = false,
@@ -923,12 +942,12 @@ private fun InfoCard(
         }
 
         item(
-            visible = !isSimpleMode && ksuIsValid()
+            visible = !isSimpleMode && systemStatus.isValid
         ) {
             SettingsBaseWidget(
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_hook_type),
-                description = Natives.getHookType(),
+                description = systemStatus.hookType,
             )
         }
 
