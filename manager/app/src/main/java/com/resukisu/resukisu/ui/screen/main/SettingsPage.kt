@@ -471,12 +471,9 @@ fun SettingsPage(bottomPadding: Dp) {
                                 )
                             }
                         }
-
-                        if (homeState.systemStatus.lkmMode == true) {
-                            item {
-                                UninstallItem {
-                                    loadingDialog.withLoading(it)
-                                }
+                        item(visible = homeState.systemStatus.lkmMode == true && !homeState.systemStatus.isLateLoadMode) {
+                            UninstallItem {
+                                loadingDialog.withLoading(it)
                             }
                         }
                     }
