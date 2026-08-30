@@ -1062,6 +1062,7 @@ dependencies = [
  "ksuinit",
  "libc",
  "log",
+ "memchr",
  "memmap2",
  "nom 8.0.0",
  "num_enum",
