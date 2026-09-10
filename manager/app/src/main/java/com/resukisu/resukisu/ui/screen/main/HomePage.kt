@@ -312,14 +312,10 @@ fun HomePage(
             ) {
                 // 状态卡片
                 if (uiState.isCoreDataLoaded) {
-                    if (uiState.systemStatus.requireNewKernel) {
+                    if (uiState.systemStatus.isManager && !uiState.systemStatus.isFullFeatured) {
                         if ((uiState.systemStatus.ksuVersion ?: 0) > BuildConfig.VERSION_CODE) {
                             WarningCard(
-                                message = stringResource(
-                                    id = R.string.require_manager_version,
-                                    BuildConfig.VERSION_CODE,
-                                    uiState.systemStatus.ksuVersion ?: 0
-                                ),
+                                message = stringResource(R.string.require_manager_version),
                                 icon = {
                                     Icon(
                                         imageVector = Icons.TwoTone.Error,
@@ -327,15 +323,17 @@ fun HomePage(
                                         tint = MaterialTheme.colorScheme.onErrorContainer,
                                         modifier = Modifier.size(18.dp)
                                     )
+                                },
+                                onClick = {
+                                    navigator.push(Route.Install(preselectedKernelUri = null))
                                 }
                             )
                         } else {
                             WarningCard(
-                                message = stringResource(
-                                    id = R.string.require_kernel_version,
-                                    uiState.systemStatus.ksuVersion ?: 0,
-                                    BuildConfig.VERSION_CODE
-                                ),
+                                message = if (uiState.systemStatus.lkmMode == true)
+                                    stringResource(R.string.require_kernel_version)
+                                else
+                                    stringResource(R.string.require_kernel_version_gki),
                                 icon = {
                                     Icon(
                                         imageVector = Icons.TwoTone.Error,
@@ -343,6 +341,9 @@ fun HomePage(
                                         tint = MaterialTheme.colorScheme.onErrorContainer,
                                         modifier = Modifier.size(18.dp)
                                     )
+                                },
+                                onClick = {
+                                    navigator.push(Route.Install(preselectedKernelUri = null))
                                 }
                             )
                         }
@@ -457,11 +458,8 @@ fun HomePage(
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-
                 ManagerUpdateCard(uiState.stableManagerUpdate)
-                Spacer(modifier = Modifier.height(10.dp))
                 ManagerUpdateCard(uiState.betaManagerUpdate)
-                Spacer(modifier = Modifier.height(10.dp))
                 if (uiState.isBetaManagerUpdateCheckFailed) {
                     WarningCard(
                         message = stringResource(R.string.beta_update_check_failed),
@@ -576,6 +574,8 @@ private fun ManagerUpdateCardContent(updateInfo: ManagerUpdateInfo) {
             )
         }
     )
+
+    Spacer(modifier = Modifier.height(10.dp))
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -859,7 +859,7 @@ private fun InfoCard(
 
 
         item(
-            visible = systemStatus.isValid
+            visible = systemStatus.isManager
         ) {
             SettingsBaseWidget(
                 iconPlaceholder = false,
@@ -949,7 +949,7 @@ private fun InfoCard(
         }
 
         item(
-            visible = !isSimpleMode && systemStatus.isValid
+            visible = !isSimpleMode && systemStatus.isFullFeatured
         ) {
             SettingsBaseWidget(
                 iconPlaceholder = false,
