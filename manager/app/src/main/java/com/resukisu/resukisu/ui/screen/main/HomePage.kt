@@ -18,25 +18,34 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.twotone.MenuBook
+import androidx.compose.material.icons.twotone.Android
 import androidx.compose.material.icons.twotone.Block
+import androidx.compose.material.icons.twotone.DeveloperBoard
 import androidx.compose.material.icons.twotone.Error
+import androidx.compose.material.icons.twotone.Extension
+import androidx.compose.material.icons.twotone.FilterList
+import androidx.compose.material.icons.twotone.Group
 import androidx.compose.material.icons.twotone.Info
+import androidx.compose.material.icons.twotone.Memory
 import androidx.compose.material.icons.twotone.PowerSettingsNew
+import androidx.compose.material.icons.twotone.Security
+import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material.icons.twotone.Smartphone
+import androidx.compose.material.icons.twotone.Tag
 import androidx.compose.material.icons.twotone.TaskAlt
 import androidx.compose.material.icons.twotone.Tune
+import androidx.compose.material.icons.twotone.VolunteerActivism
 import androidx.compose.material.icons.twotone.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -54,9 +63,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,7 +71,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -101,6 +106,7 @@ import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalPermissionRequestInterface
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.adaptiveScaffoldWindowInsets
 import com.resukisu.resukisu.ui.util.downloader.downloadManagerUpdate
 import com.resukisu.resukisu.ui.viewmodel.HomeUiAction
 import com.resukisu.resukisu.ui.viewmodel.HomeUiEvent
@@ -253,7 +259,6 @@ fun HomePage(
 
     if (!uiState.isInitialDataLoaded) return
 
-    val pullRefreshState = rememberPullToRefreshState()
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     val scrollState = rememberScrollState()
@@ -271,9 +276,7 @@ fun HomePage(
         },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-        ),
+        contentWindowInsets = adaptiveScaffoldWindowInsets(includeBottom = false),
         snackbarHost = {
             SwipeableSnackbarHost(
                 modifier = Modifier.padding(bottom = bottomPadding),
@@ -281,39 +284,25 @@ fun HomePage(
             )
         }
     ) { innerPadding ->
-        PullToRefreshBox(
-            state = pullRefreshState,
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = { viewModel.dispatch(HomeUiAction.Refresh()) },
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .blurSource(),
-            indicator = {
-                PullToRefreshDefaults.LoadingIndicator(
-                    modifier = Modifier
-                        .padding(top = innerPadding.calculateTopPadding())
-                        .align(Alignment.TopCenter),
-                    state = pullRefreshState,
-                    isRefreshing = uiState.isRefreshing,
-                )
-            },
+                .blurSource()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .verticalScroll(scrollState)
+                .padding(
+                    top = innerPadding.calculateTopPadding() + 2.dp,
+                    start = 16.dp,
+                    end = 16.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .verticalScroll(scrollState)
-                    .padding(
-                        top = innerPadding.calculateTopPadding() + 2.dp,
-                        start = 16.dp,
-                        end = 16.dp
-                    ),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
-            ) {
                 // 状态卡片
                 if (uiState.isCoreDataLoaded) {
                     if (uiState.systemStatus.isManager && !uiState.systemStatus.isFullFeatured) {
-                        if ((uiState.systemStatus.ksuVersion ?: 0) > BuildConfig.VERSION_CODE) {
+                        if ((uiState.systemStatus.kernelUAPIVersion
+                                ?: 1) > uiState.systemStatus.managerUAPIVersion
+                        ) {
                             WarningCard(
                                 message = stringResource(R.string.require_manager_version),
                                 icon = {
@@ -479,17 +468,17 @@ fun HomePage(
                         systemStatus = uiState.systemStatus,
                         systemInfo = uiState.systemInfo,
                         isSimpleMode = uiState.isSimpleMode,
+                        showHomeCardIcons = uiState.showHomeCardIcons,
                     )
                 }
 
                 // 链接卡片
                 if (!uiState.isSimpleMode) {
-                    DonateCard()
-                    LearnMoreCard()
+                    DonateCard(uiState.showHomeCardIcons)
+                    LearnMoreCard(uiState.showHomeCardIcons)
                 }
 
                 Spacer(Modifier.height(bottomPadding))
-            }
         }
     }
 }
@@ -775,7 +764,9 @@ private fun StatusCard(
 }
 
 @Composable
-fun LearnMoreCard() {
+fun LearnMoreCard(
+    showIcon: Boolean,
+) {
     val uriHandler = LocalUriHandler.current
     val url = stringResource(R.string.home_learn_kernelsu_url)
 
@@ -786,6 +777,7 @@ fun LearnMoreCard() {
     ) {
         item {
             SettingsBaseWidget(
+                icon = Icons.AutoMirrored.TwoTone.MenuBook.takeIf { showIcon },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_learn_kernelsu),
                 description = stringResource(R.string.home_click_to_learn_kernelsu),
@@ -798,7 +790,9 @@ fun LearnMoreCard() {
 }
 
 @Composable
-fun DonateCard() {
+fun DonateCard(
+    showIcon: Boolean,
+) {
     val uriHandler = LocalUriHandler.current
     SegmentedColumn(
         modifier = Modifier.fillMaxWidth(),
@@ -807,6 +801,7 @@ fun DonateCard() {
     ) {
         item {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.VolunteerActivism.takeIf { showIcon },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_support_title),
                 description = stringResource(R.string.home_support_content),
@@ -823,6 +818,7 @@ private fun InfoCard(
     systemStatus: KernelStatus,
     systemInfo: HomeSystemInfo,
     isSimpleMode: Boolean,
+    showHomeCardIcons: Boolean,
 ) {
     val managersList = systemInfo.managersList
 
@@ -833,6 +829,7 @@ private fun InfoCard(
     ) {
         item {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Smartphone.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_device_model),
                 description = systemInfo.deviceModel,
@@ -841,6 +838,7 @@ private fun InfoCard(
 
         item {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.DeveloperBoard.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_kernel),
                 description = systemInfo.kernelRelease,
@@ -851,6 +849,7 @@ private fun InfoCard(
             visible = !isSimpleMode
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Android.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_android_version),
                 description = systemInfo.androidVersion,
@@ -862,6 +861,7 @@ private fun InfoCard(
             visible = systemStatus.isManager
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Memory.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_kernel_version),
                 description = systemStatus.ksuFullVersion.orEmpty(),
@@ -870,6 +870,7 @@ private fun InfoCard(
 
         item {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Tag.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_manager_version),
                 description = "${systemInfo.managerVersion.first} (${systemInfo.managerVersion.second}/${systemInfo.managerVersion.third})",
@@ -880,6 +881,7 @@ private fun InfoCard(
             visible = !isSimpleMode && systemInfo.susfsEnabled && systemInfo.susfsVersion.isNotEmpty()
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Settings.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_susfs_version),
                 description = systemInfo.susfsVersion,
@@ -894,6 +896,7 @@ private fun InfoCard(
     ) {
         item {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Security.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_selinux_status),
                 description = systemInfo.selinuxStatus,
@@ -910,6 +913,7 @@ private fun InfoCard(
             }
 
             SettingsBaseWidget(
+                icon = Icons.TwoTone.FilterList.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_seccomp_status),
                 description = seccompDisplay,
@@ -942,6 +946,7 @@ private fun InfoCard(
             }.trimEnd(' ', '|')
 
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Group.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.multi_manager_list),
                 description = managersText.ifEmpty { stringResource(R.string.no_active_manager) },
@@ -952,6 +957,7 @@ private fun InfoCard(
             visible = !isSimpleMode && systemStatus.isFullFeatured
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Tune.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_hook_type),
                 description = systemStatus.hookType,
@@ -962,6 +968,7 @@ private fun InfoCard(
             visible = !isSimpleMode && systemInfo.zygiskImplement.isNotEmpty() && systemInfo.zygiskImplement != "None"
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Extension.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_zygisk_implement),
                 description = systemInfo.zygiskImplement,
@@ -972,6 +979,7 @@ private fun InfoCard(
             visible = !isSimpleMode && systemInfo.metaModuleImplement.isNotEmpty() && systemInfo.metaModuleImplement != "None"
         ) {
             SettingsBaseWidget(
+                icon = Icons.TwoTone.Extension.takeIf { showHomeCardIcons },
                 iconPlaceholder = false,
                 title = stringResource(R.string.home_meta_module_implement),
                 description = systemInfo.metaModuleImplement,
